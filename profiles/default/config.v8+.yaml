@@ -2,3 +2,4 @@ software-deployment-method: conda
 cores: 10
 rerun-incomplete: True
 use-conda: True
+printshellcmds: True

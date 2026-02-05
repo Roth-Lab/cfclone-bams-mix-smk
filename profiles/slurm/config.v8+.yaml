@@ -3,6 +3,12 @@ jobs: unlimited
 software-deployment-method: conda
 use-conda: True
 
+printshellcmds: True
+
+report: 'report.html'
+report-after-run: True
+
+
 latency-wait: 60
 rerun-incomplete: True
 retries: 1
