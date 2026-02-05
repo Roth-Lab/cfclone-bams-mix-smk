@@ -27,11 +27,11 @@ def main(args):
     
     df.insert(2, 'coverage', args.coverage)
     
+    df.insert(3, 'proportion', args.proportion)
+    
+    df.insert(4, 'bam_id', args.bam_id)
+    
     df.to_csv(args.out_file, sep='\t', index=False)
-    
-    print("LOL")
-    
-    
     
 
 if __name__ == "__main__":
@@ -49,6 +49,10 @@ if __name__ == "__main__":
     parser.add_argument('--sample', type=str, required=True)
     
     parser.add_argument('--coverage', type=float, required=True)
+    
+    parser.add_argument("--proportion", type=float, required=True)
+    
+    parser.add_argument("--bam-id", type=str, required=True)
 
     parser.add_argument('--read-length', type=int, required=True)
     

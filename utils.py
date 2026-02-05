@@ -1,6 +1,8 @@
-from pathlib import Path
-
 import pandas as pd
+
+import numpy as np 
+
+from pathlib import Path
 
 from snakemake.shell import shell
 
@@ -10,23 +12,19 @@ class ConfigManager:
         self.config = config
 
     # WILDCARDS
-
+    
     @property
-    def patients(self) -> list[str]:
-        return self.config["patients"]
-
+    def increment(self) -> float:
+        return self.config['increment']
+    
     @property
-    def patient_ids(self) -> list[int]:
-        return list(range(len(self.patients)))
-
+    def proportions(self) -> list[float]:
+        return list(np.arange(0.0, 1.0 + self.increment, self.increment))
+    
     @property
-    def samples(self) -> list[str]:
-        return self.config["samples"]
-
-    @property
-    def sample_ids(self) -> list[int]:
-        return list(range(len(self.samples)))
-
+    def proportion_ids(self) -> list[int]:
+        return list(range(len(self.proportions)))
+    
     @property
     def coverages(self) -> list[float]:
         return self.config["coverages"]
@@ -34,6 +32,24 @@ class ConfigManager:
     @property
     def coverage_ids(self) -> list[int]:
         return list(range(len(self.coverages)))
+    
+    @property
+    def bam_ids(self) -> list[str]:
+        return ['initial', 'final']
+    
+    # DATA SETTINGS 
+
+    @property
+    def patient(self) -> list[str]:
+        return self.config["patient"]
+
+    @property
+    def initial_sample(self) -> str:
+        return self.config['initial_sample']
+    
+    @property
+    def final_sample(self) -> str:
+        return self.config['final_sample']
 
     # INPUT PATIENT DATA
 
@@ -89,14 +105,14 @@ class ConfigManager:
 
     # DOWN SAMPLE BAM SETTINGS
 
-    # USED TO COMPUTE NUMBER OF READS NEEDED WHEN DOWN SAMPLING A BAM FILE
     @property
     def read_length(self) -> int:
+        """Used to compute number of reads needed to down sample bam file to"""
         return self.config["read_length"]
 
-    # USED TO COMPUTE NUMBER OF READS NEEDED WHEN DOWN SAMPLING A BAM FILE
     @property
     def genome_length(self) -> int:
+        """Used to compute number of reads needed to down sample bam file to"""
         return self.config["genome_length"]
 
     # PREPROC SETTINGS
@@ -108,6 +124,14 @@ class ConfigManager:
     @property
     def add_chr_prefix(self):
         return self.config.get("add_chr_prefix", True)
+    
+    @property
+    def min_bqual(self):
+        return int(self.config.get("min_bqual", 30))
+
+    @property
+    def min_mqual(self):
+        return int(self.config.get("min_mqual", 30))
 
     @property
     def chromosomes(self):
@@ -128,14 +152,6 @@ class ConfigManager:
 
         return chroms
 
-    @property
-    def min_bqual(self):
-        return int(self.config.get("min_bqual", 30))
-
-    @property
-    def min_mqual(self):
-        return int(self.config.get("min_mqual", 30))
-
     # CFCLONE SETTINGS
 
     @property
@@ -152,7 +168,7 @@ class ConfigManager:
 
     @property
     def num_chains(self):
-        return self.config.get("num_chains", 16)
+        return self.config.get("num_chains", 5)
 
     @property
     def num_rounds(self):
@@ -184,11 +200,19 @@ class ConfigManager:
 
     @property
     def down_sampled_bam_file_template(self) -> Path:
-        return self.out_dir.joinpath("patient_{patient_id}", "sample_{sample_id}", "coverage_{coverage_id}.bam")
+        return self.out_dir.joinpath("coverage_{coverage_id}", "proportion_{proportion_id}", "{bam_id}.bam")
 
     @property
     def down_sampled_bai_file_template(self) -> Path:
         return self.down_sampled_bam_file_template.with_suffix(".bam.bai")
+    
+    @property
+    def mixed_bam_file_template(self) -> Path:
+        return self.out_dir.joinpath("coverage_{coverage_id}", "proportion_{proportion_id}", "mixed.bam")
+    
+    @property
+    def mixed_bai_file_template(self) -> Path:
+        return self.mixed_bam_file_template.with_suffix(".bam.bai")
 
     @property
     def down_sampled_total_reads_template(self) -> Path:
@@ -212,9 +236,8 @@ class ConfigManager:
     def working_dir(self) -> Path:
         return self.pipeline_dir.joinpath(
             "working",
-            "patient_{patient_id}",
-            "sample_{sample_id}",
             "coverage_{coverage_id}",
+            "proportion_{proportion_id}",
         )
 
     @property
@@ -277,15 +300,14 @@ class ConfigManager:
 
     @property
     def cfclone_clone_cn_template(self):
-        return self.cfclone_input_dir.joinpath("clone_cn", "patient_{patient_id}", "clone_cn.tsv.gz")
+        return self.cfclone_input_dir.joinpath("clone_cn", "clone_cn.tsv.gz")
 
     @property
     def cfclone_ctdna_template(self):
         return self.cfclone_input_dir.joinpath(
             "ctdna",
-            "patient_{patient_id}",
-            "sample_{sample_id}",
             "coverage_{coverage_id}",
+            "proportion_{proportion_id}",
             "data.tsv.gz",
         )
 
@@ -294,9 +316,8 @@ class ConfigManager:
     @property
     def replicate_dir(self):
         return self.pipeline_dir.joinpath(
-            "patient_{patient_id}",
-            "sample_{sample_id}",
             "coverage_{coverage_id}",
+            "proportion_{proportion_id}",
         )
 
     @property
@@ -352,29 +373,27 @@ class ConfigManager:
 
         files.append(self.copied_config)
         
-        files.append(self.plot_summary_file)
-        
-        files.append(self.summary_file)
-        
-        files.append(self.down_sampled_summary_file)
-
-        for p in self.patient_ids:
-
-            for s in self.sample_ids:
-
-                for c in self.coverage_ids:
-
-                    baf_plot = str(self.baf_plot_template).format(
-                        patient_id=p, coverage_id=c, sample_id=s
+        for c in self.coverage_ids:
+            
+            for i in self.proportion_ids:
+                
+                for b in self.bam_ids:
+                
+                    files.append(
+                        str(self.down_sampled_bam_file_template).format(
+                        coverage_id=c,
+                        proportion_id=i,
+                        bam_id=b,
+                        )
                     )
-
-                    rdr_plot = str(self.rdr_plot_template).format(
-                        patient_id=p, coverage_id=c, sample_id=s
+                    
+                    files.append(
+                        str(self.down_sampled_bai_file_template).format(
+                        coverage_id=c,
+                        proportion_id=i,
+                        bam_id=b,
+                        )
                     )
-
-                    files.append(baf_plot)
-
-                    files.append(rdr_plot)
 
         return files
 
@@ -382,53 +401,79 @@ class ConfigManager:
 
     def get_bam_file(self, wildcards: dict) -> str:
 
-        patient = self.patients[int(wildcards["patient_id"])]
-
-        sample = self.samples[int(wildcards["sample_id"])]
+        patient = self.patient
+        
+        sample = self.get_sample(wildcards)
 
         return str(self.bam_file_template).format(patient=patient, sample=sample)
 
     def get_bai_file(self, wildcards: dict) -> str:
 
-        patient = self.patients[int(wildcards["patient_id"])]
-
-        sample = self.samples[int(wildcards["sample_id"])]
+        patient = self.patient
+        
+        sample = self.get_sample(wildcards)
 
         return str(self.bai_file_template).format(patient=patient, sample=sample)
+    
+    def get_sample(self, wildcards: dict) -> str:
+        return self.initial_sample if wildcards.bam_id == 'initial' else self.final_sample
+    
+    def get_bams_to_mix(self, wildcards: dict) -> list[str]:
+        
+        coverage_id = int(wildcards['coverage_id'])
+        
+        proportion_id = int(wildcards['proportion_id'])
+        
+        files = []
+        
+        for b in self.bam_ids:
+            
+            files.append(
+                str(self.down_sampled_bam_file_template).format(
+                    coverage_id=coverage_id,
+                    proportion_id=proportion_id,
+                    bam_id=b
+                )
+            )
+        
+        return files
+    
+    @property
+    def get_read_counts_file(self) -> str:
+        return str(self.read_counts_file_template).format(patient=self.patient)
+    
+    @property
+    def get_control_bam_file(self) -> str:
 
-    def get_read_counts_file(self, wildcards: dict) -> str:
-
-        patient = self.patients[int(wildcards["patient_id"])]
-
-        return str(self.read_counts_file_template).format(patient=patient)
-
-    def get_control_bam_file(self, wildcards: dict) -> str:
-
-        patient = self.patients[int(wildcards["patient_id"])]
+        patient = self.patient
 
         return str(self.control_bam_file_template).format(patient=patient)
-
-    def get_control_bai_file(self, wildcards: dict) -> str:
-
-        patient = self.patients[int(wildcards["patient_id"])]
+    
+    @property
+    def get_control_bai_file(self) -> str:
+        
+        patient = self.patient
 
         return str(self.control_bai_file_template).format(patient=patient)
+    
+    @property
+    def get_snp_file(self) -> str:
 
-    def get_snp_file(self, wildcards: dict) -> str:
-
-        patient = self.patients[int(wildcards["patient_id"])]
+        patient = self.patient
 
         return str(self.snp_file_template).format(patient=patient)
+    
+    @property
+    def get_hapclone_results_file(self) -> str:
 
-    def get_hapclone_results_file(self, wildcards: dict) -> str:
-
-        patient = self.patients[int(wildcards["patient_id"])]
+        patient = self.patient
 
         return str(self.hapclone_results_file_template).format(patient=patient)
+    
+    @property
+    def get_clone_filter_file(self) -> str:
 
-    def get_clone_filter_file(self, wildcards: dict) -> str:
-
-        patient = self.patients[int(wildcards["patient_id"])]
+        patient = self.patient
 
         return str(self.clone_filter_file_template).format(patient=patient)
 
@@ -444,14 +489,16 @@ class ConfigManager:
 
         files = []
 
-        for p in self.patient_ids:
-
-            for s in self.sample_ids:
-
-                for c in self.coverage_ids:
-
+        for c in self.coverage_ids:
+            
+            for i in self.proportion_ids:
+                
+                for b in self.bam_ids:
+                
                     file = str(file_template).format(
-                        patient_id=p, sample_id=s, coverage_id=c
+                        coverage_id=c, 
+                        proportion_id=i,
+                        bam_id=b,
                     )
 
                     files.append(file)
@@ -485,29 +532,27 @@ class ConfigManager:
 
     def compute_down_sample_proportion(self, wildcards: dict) -> float:
 
-        # LOAD TOTAL NUMBER OF READS AVAILABLE IN BAM FILE
-
-        read_counts_file = self.get_read_counts_file(wildcards)
-
-        df_num_reads = pd.read_csv(read_counts_file, sep="\t")
-
-        sample_id = int(wildcards["sample_id"])
-
-        sample = self.samples[sample_id]
+        # LOAD TOTAL NUMBER OF READS IN BAM FILE
+        
+        df_num_reads = pd.read_csv(self.get_read_counts_file, sep="\t")
+        
+        sample = self.get_sample(wildcards)
 
         bam_file = "{}.bam".format(sample)
 
-        num_reads_avail = df_num_reads.loc[
-            df_num_reads["file"] == bam_file, "reads"
-        ].values[0]
+        num_reads_avail = df_num_reads.loc[df_num_reads["file"] == bam_file, "reads"].values[0]
 
         # COMPUTE TOTAL NUMBER OF READS NEEDED FROM BAM FILE
 
         coverage_id = int(wildcards["coverage_id"])
+        
+        proportion_id = int(wildcards["proportion_id"])
 
         cov = self.coverages[coverage_id]
+        
+        prop = self.proportions[proportion_id]
 
-        num_reads_needed = int((self.genome_length / self.read_length) * cov)
+        num_reads_needed = int((self.genome_length / self.read_length) * cov * prop)
 
         # CHECK IF THERE ARE ENOUGH READS IN THE BAM FILE
 
@@ -515,15 +560,14 @@ class ConfigManager:
 
             error_template = "Reads needed is greater than reads avaible: {n} > {a}"
 
-            raise ValueError(
-                error_template.format(n=num_reads_needed, a=num_reads_avail)
-            )
+            raise ValueError(error_template.format(n=num_reads_needed, a=num_reads_avail))
 
-        # PROPORTION OF BAM FILE WE DOWN SAMPLE
+        # PROPORTION OF BAM FILE WE DOWN SAMPLE TO
 
         bam_file_prop = num_reads_needed / num_reads_avail
 
         return format(bam_file_prop, "f")  # store as string
+    
 
     # HELPERS FOR LOG AND BENCHMARK FILES
 
