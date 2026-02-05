@@ -196,7 +196,7 @@ class ConfigManager:
     def copied_config(self) -> Path:
         return self.out_dir.joinpath("config.yaml")
 
-    # DOWN SAMPLING BAMS OUTPUTS
+    # DOWN SAMPLING AND MIXING BAMS OUTPUTS
 
     @property
     def down_sampled_bam_file_template(self) -> Path:
@@ -207,6 +207,10 @@ class ConfigManager:
         return self.down_sampled_bam_file_template.with_suffix(".bam.bai")
     
     @property
+    def down_sampled_total_reads_template(self) -> Path:
+        return self.down_sampled_bam_file_template.with_suffix(".tsv")
+    
+    @property
     def mixed_bam_file_template(self) -> Path:
         return self.out_dir.joinpath("coverage_{coverage_id}", "proportion_{proportion_id}", "mixed.bam")
     
@@ -215,8 +219,8 @@ class ConfigManager:
         return self.mixed_bam_file_template.with_suffix(".bam.bai")
 
     @property
-    def down_sampled_total_reads_template(self) -> Path:
-        return self.down_sampled_bam_file_template.with_suffix(".tsv")
+    def mixed_bam_total_reads_template(self) -> Path:
+        return self.mixed_bam_file_template.with_suffix('.tsv')
 
     # PREPROC OUTPUTS
 
@@ -363,6 +367,10 @@ class ConfigManager:
         return self.outputs.joinpath('down_sampled_bams_summary.tsv')
     
     @property
+    def mixed_bams_summary_file(self) -> Path:
+        return self.outputs.joinpath('mixed_bams_summary.tsv')
+    
+    @property
     def plot_summary_file(self) -> Path:
         return self.outputs.joinpath('detection.png')
 
@@ -373,27 +381,9 @@ class ConfigManager:
 
         files.append(self.copied_config)
         
-        for c in self.coverage_ids:
-            
-            for i in self.proportion_ids:
-                
-                for b in self.bam_ids:
-                
-                    files.append(
-                        str(self.down_sampled_bam_file_template).format(
-                        coverage_id=c,
-                        proportion_id=i,
-                        bam_id=b,
-                        )
-                    )
-                    
-                    files.append(
-                        str(self.down_sampled_bai_file_template).format(
-                        coverage_id=c,
-                        proportion_id=i,
-                        bam_id=b,
-                        )
-                    )
+        files.append(self.down_sampled_summary_file)
+        
+        files.append(self.mixed_bams_summary_file)
 
         return files
 
@@ -504,6 +494,25 @@ class ConfigManager:
                     files.append(file)
 
         return files
+    
+    @property
+    def gather_mixed_bams_summary_files(self) -> list[str]:
+
+        files = []
+
+        for c in self.coverage_ids:
+            
+            for i in self.proportion_ids:
+                
+                file = str(self.mixed_bam_total_reads_template).format(
+                    coverage_id=c, 
+                    proportion_id=i,
+                )
+
+                files.append(file)
+
+        return files
+    
 
     def gather_files_by_chrom(self, file_template: Path, wildcards: dict) -> list[str]:
 

@@ -114,6 +114,37 @@ rule merge_down_sampled_bam_files:
         """
 
 
+rule write_mixed_bam_summary_file:
+    input:
+        bam=config.mixed_bam_file_template,
+        bai=config.mixed_bai_file_template,
+    output:
+        config.mixed_bam_total_reads_template
+    conda:
+        "envs/python.yaml"
+    threads: 2
+    log:
+        config.get_log_file(config.mixed_bam_total_reads_template)
+    params:
+        r=config.read_length,
+        g=config.genome_length,
+        p=config.patient,
+        s=config.get_sample, 
+        c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
+        i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
+    shell:
+        "(python scripts/write_down_sample_summary_file.py "
+        "-i {input.bam} "
+        "-o {output} "
+        "--patient {params.p} "
+        "--sample {params.s} "
+        "--coverage {params.c} "
+        "--proportion {params.i} "
+        "--bam-id 'mixed' "
+        "--read-length {params.r} "
+        "--genome-length {params.g} ) >{log} 2>&1"
+
+
 rule merge_down_sampled_summary_files:
     input:
         config.gather_files(config.down_sampled_total_reads_template)
@@ -126,6 +157,18 @@ rule merge_down_sampled_summary_files:
     shell:
         "(python scripts/merge_tables.py -i {input} -o {output} ) >{log} 2>&1"
 
+
+rule merge_mixed_bams_summary_files:
+    input:
+        config.gather_mixed_bams_summary_files
+    output:
+        config.mixed_bams_summary_file
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.mixed_bams_summary_file)
+    shell:
+        "(python scripts/merge_tables.py -i {input} -o {output} ) >{log} 2>&1"
 
 
 # # BUILD RDR AND BAF TSV FILES 
