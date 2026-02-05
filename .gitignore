@@ -1,0 +1,5 @@
+*snakemake/
+*local_example/
+*data/
+*__pycache__/
+*workflow/

@@ -1,0 +1,22 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Mix bams
+description: Snakemake configuration file for creating mixture of bam files 
+type: object
+properties:
+  out_dir:
+    type: string
+    minLength: 1
+    description: Path to output directory
+  coverages:
+    type: list
+    contains:
+      type: number
+    minContains: 1
+    description: List of coverage values to test
+  props:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: number
+    description: List of tumour content values to test

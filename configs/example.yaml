@@ -1,0 +1,21 @@
+out_dir: /home/matteo/projects/cfdna/wfs/results/dev/cfclone-down-bams-detect-smk/out_dir
+
+# INPUT DATA 
+
+samples_data_dir: test_data
+
+samples_total_read_counts_file: test_data/bam_read_counts.tsv
+
+# WILDCARDS
+
+coverages:
+  - 0.0000001
+
+samples:
+  - a 
+
+# DATA SETTINGS 
+
+read_length: 150
+
+genome_length: 3000000000
