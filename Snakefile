@@ -175,280 +175,281 @@ rule merge_mixed_bams_summary_files:
 
 # # BUILD RDR AND BAF TSV FILES 
 
-# rule build_map_wig:
-#     input:
-#         config.map_file
-#     output:
-#         temp(config.map_template)
-#     params:
-#         c=",".join(config.chromosomes),
-#         w=config.parse_region_size(config.bin_size)
-#     conda:
-#         "envs/hmmcopy-utils.yaml"
-#     log:
-#         config.get_log_file(config.map_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "mapCounter -c {params.c} -w {params.w} -s {input} "
-#         "> {output} "
-#         "2> {log}"
+rule build_map_wig:
+    input:
+        config.map_file
+    output:
+        temp(config.map_template)
+    params:
+        c=",".join(config.chromosomes),
+        w=config.parse_region_size(config.bin_size)
+    conda:
+        "envs/hmmcopy-utils.yaml"
+    log:
+        config.get_log_file(config.map_template)
+    resources:
+        mem="8G"
+    shell:
+        "mapCounter -c {params.c} -w {params.w} -s {input} "
+        "> {output} "
+        "2> {log}"
 
-# rule build_gc_wig:
-#     input:
-#         config.ref_genome_file
-#     output:
-#         temp(config.gc_template)
-#     params:
-#         c=",".join(config.chromosomes),
-#         w=config.parse_region_size(config.bin_size)
-#     conda:
-#         "envs/hmmcopy-utils.yaml"
-#     log:
-#         config.get_log_file(config.gc_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "gcCounter -c {params.c} -w {params.w} -s {input} "
-#         "> {output} "
-#         "2>{log}"
+rule build_gc_wig:
+    input:
+        config.ref_genome_file
+    output:
+        temp(config.gc_template)
+    params:
+        c=",".join(config.chromosomes),
+        w=config.parse_region_size(config.bin_size)
+    conda:
+        "envs/hmmcopy-utils.yaml"
+    log:
+        config.get_log_file(config.gc_template)
+    resources:
+        mem="8G"
+    shell:
+        "gcCounter -c {params.c} -w {params.w} -s {input} "
+        "> {output} "
+        "2>{log}"
 
-# rule build_reads_chrom:
-#     input:
-#         bam=config.down_sampled_bam_file_template,
-#         bai=config.down_sampled_bai_file_template
-#     output:
-#         temp(config.reads_chrom_template)
-#     params:
-#         q=config.min_mqual,
-#         s=config.parse_region_size(config.bin_size),
-#     conda:
-#         "envs/python.yaml"
-#     wildcard_constraints:
-#         chrom='[^/]+'
-#     log:
-#         config.get_log_file(config.reads_chrom_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "(python scripts/build_read_counts.py "
-#         "-b {input.bam} "
-#         "-o {output} "
-#         "-c {wildcards.chrom} "
-#         "-q {params.q} "
-#         "-s {params.s}) >{log} 2>&1"
+rule build_reads_chrom:
+    input:
+        bam=config.mixed_bam_file_template,
+        bai=config.mixed_bai_file_template
+    output:
+        temp(config.reads_chrom_template)
+    params:
+        q=config.min_mqual,
+        s=config.parse_region_size(config.bin_size),
+    conda:
+        "envs/python.yaml"
+    wildcard_constraints:
+        chrom='[^/]+'
+    log:
+        config.get_log_file(config.reads_chrom_template)
+    resources:
+        mem="8G"
+    shell:
+        "(python scripts/build_read_counts.py "
+        "-b {input.bam} "
+        "-o {output} "
+        "-c {wildcards.chrom} "
+        "-q {params.q} "
+        "-s {params.s}) >{log} 2>&1"
 
 
-# rule build_normal_reads_chrom:
-#     input:
-#         bam=config.get_control_bam_file,
-#         bai=config.get_control_bai_file
-#     output:
-#         temp(config.normal_reads_chrom_template)
-#     params:
-#         q=config.min_mqual,
-#         s=config.parse_region_size(config.bin_size),
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.normal_reads_chrom_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "(python scripts/build_read_counts.py "
-#         "-b {input.bam} "
-#         "-o {output} "
-#         "-c {wildcards.chrom} "
-#         "-q {params.q} "
-#         "-s {params.s}) >{log} 2>&1"
+rule build_normal_reads_chrom:
+    input:
+        bam=config.get_control_bam_file,
+        bai=config.get_control_bai_file
+    output:
+        temp(config.normal_reads_chrom_template)
+    params:
+        q=config.min_mqual,
+        s=config.parse_region_size(config.bin_size),
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.normal_reads_chrom_template)
+    resources:
+        mem="8G"
+    shell:
+        "(python scripts/build_read_counts.py "
+        "-b {input.bam} "
+        "-o {output} "
+        "-c {wildcards.chrom} "
+        "-q {params.q} "
+        "-s {params.s}) >{log} 2>&1"
         
 
-# rule build_reads:
-#     input:
-#         lambda wildcards: config.gather_files_by_chrom(config.reads_chrom_template, wildcards)
-#     output:
-#         temp(config.reads_template)
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.reads_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "(python scripts/merge_tables.py "
-#         "-i {input} "
-#         "-o {output}) >{log} 2>&1"
+rule build_reads:
+    input:
+        lambda wildcards: config.gather_files_by_chrom(config.reads_chrom_template, wildcards)
+    output:
+        temp(config.reads_template)
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.reads_template)
+    resources:
+        mem="8G"
+    shell:
+        "(python scripts/merge_tables.py "
+        "-i {input} "
+        "-o {output}) >{log} 2>&1"
 
 
-# rule build_normal_reads:
-#     input:
-#         lambda wildcards: config.gather_files_by_chrom(config.normal_reads_chrom_template, wildcards)
-#     output:
-#         temp(config.normal_reads_template)
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.normal_reads_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "(python scripts/merge_tables.py "
-#         "-i {input} "
-#         "-o {output}) >{log} 2>&1"
+rule build_normal_reads:
+    input:
+        lambda wildcards: config.gather_files_by_chrom(config.normal_reads_chrom_template, wildcards)
+    output:
+        temp(config.normal_reads_template)
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.normal_reads_template)
+    resources:
+        mem="8G"
+    shell:
+        "(python scripts/merge_tables.py "
+        "-i {input} "
+        "-o {output}) >{log} 2>&1"
 
 
-# rule build_reads_wig:
-#     input:
-#         config.reads_template
-#     output:
-#         config.reads_wig_template
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.reads_wig_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "(python scripts/build_reads_wig.py "
-#         "-i {input} "
-#         "-o {output}) >{log} 2>&1"
+rule build_reads_wig:
+    input:
+        config.reads_template
+    output:
+        config.reads_wig_template
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.reads_wig_template)
+    resources:
+        mem="8G"
+    shell:
+        "(python scripts/build_reads_wig.py "
+        "-i {input} "
+        "-o {output}) >{log} 2>&1"
 
-# rule build_rdr:
-#     input:
-#         i=config.reads_template,
-#         b=config.black_list_file,
-#         c=config.centromere_file,
-#         g=config.gc_template,
-#         m=config.map_template,
-#         n=config.normal_reads_template
-#     output:
-#         temp(config.rdr_template)
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.rdr_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "(python scripts/build_corrected_rdr.py "
-#         "-i {input.i} "
-#         "-b {input.b} "
-#         "-c {input.c} "
-#         "-g {input.g} "
-#         "-m {input.m} "
-#         "-n {input.n} "
-#         "-o {output}) >{log} 2>&1"
-
-
-# rule build_allele_counts_chrom:
-#     input:
-#         bam=config.down_sampled_bam_file_template,
-#         bai=config.down_sampled_bai_file_template,
-#         s=config.get_snp_file
-#     output:
-#         temp(config.allele_counts_chrom_template)
-#     params:
-#         q=config.min_bqual,
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.allele_counts_chrom_template)
-#     resources:
-#         mem="8G"
-#     shell:
-#         "(python scripts/build_allele_counts.py "
-#         "-b {input.bam} "
-#         "-s {input.s} "
-#         "-o {output} "
-#         "-c {wildcards.chrom} "
-#         "-q {params.q}) >{log} 2>&1"
+rule build_rdr:
+    input:
+        i=config.reads_template,
+        b=config.black_list_file,
+        c=config.centromere_file,
+        g=config.gc_template,
+        m=config.map_template,
+        n=config.normal_reads_template
+    output:
+        temp(config.rdr_template)
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.rdr_template)
+    resources:
+        mem="8G"
+    shell:
+        "(python scripts/build_corrected_rdr.py "
+        "-i {input.i} "
+        "-b {input.b} "
+        "-c {input.c} "
+        "-g {input.g} "
+        "-m {input.m} "
+        "-n {input.n} "
+        "-o {output}) >{log} 2>&1"
 
 
-# rule build_allele_counts:
-#     input:
-#         lambda wildcards: config.gather_files_by_chrom(config.allele_counts_chrom_template, wildcards)
-#     output:
-#         temp(config.allele_counts_template)
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.allele_counts_template)
-#     shell:
-#         "(python scripts/merge_tables.py "
-#         "-i {input} "
-#         "-o {output}) >{log} 2>&1"
+rule build_allele_counts_chrom:
+    input:
+        bam=config.down_sampled_bam_file_template,
+        bai=config.down_sampled_bai_file_template,
+        s=config.get_snp_file
+    output:
+        temp(config.allele_counts_chrom_template)
+    params:
+        q=config.min_bqual,
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.allele_counts_chrom_template)
+    resources:
+        mem="8G"
+    shell:
+        "(python scripts/build_allele_counts.py "
+        "-b {input.bam} "
+        "-s {input.s} "
+        "-o {output} "
+        "-c {wildcards.chrom} "
+        "-q {params.q}) >{log} 2>&1"
 
 
-# rule build_hap_bin_counts:
-#     input:
-#         bam=config.down_sampled_bam_file_template,
-#         bai=config.down_sampled_bai_file_template,
-#         i=config.allele_counts_template
-#     output:
-#         temp(config.baf_template)
-#     params:
-#         c=" ".join(config.chromosomes),
-#         s=config.parse_region_size(config.bin_size),
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.baf_template)
-#     shell:
-#         "(python scripts/build_hap_bin_counts.py "
-#         "-b {input.bam} "
-#         "-i {input.i} "
-#         "-o {output} "
-#         "-c {params.c} "
-#         "-s {params.s} ) >{log} 2>&1"
+rule build_allele_counts:
+    input:
+        lambda wildcards: config.gather_files_by_chrom(config.allele_counts_chrom_template, wildcards)
+    output:
+        temp(config.allele_counts_template)
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.allele_counts_template)
+    shell:
+        "(python scripts/merge_tables.py "
+        "-i {input} "
+        "-o {output}) >{log} 2>&1"
 
 
-# rule build_combined_results:
-#     input:
-#         b=config.baf_template,
-#         r=config.rdr_template
-#     output:
-#         config.combined_results_template
-#     params:
-#         c=" ".join(config.chromosomes),
-#         s=config.parse_region_size(config.bin_size),
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.combined_results_template)
-#     shell:
-#         "(python scripts/build_combined_results.py "
-#         "-b {input.b} "
-#         "-r {input.r} "
-#         "-o {output} ) >{log} 2>&1"
+rule build_hap_bin_counts:
+    input:
+        bam=config.mixed_bam_file_template,
+        bai=config.mixed_bai_file_template,
+        i=config.allele_counts_template
+    output:
+        temp(config.baf_template)
+    params:
+        c=" ".join(config.chromosomes),
+        s=config.parse_region_size(config.bin_size),
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.baf_template)
+    shell:
+        "(python scripts/build_hap_bin_counts.py "
+        "-b {input.bam} "
+        "-i {input.i} "
+        "-o {output} "
+        "-c {params.c} "
+        "-s {params.s} ) >{log} 2>&1"
 
 
-# rule plot_baf:
-#     input:
-#         config.combined_results_template
-#     output:
-#         config.baf_plot_template
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.baf_plot_template)
-#     shell:
-#         "(python scripts/plot_baf.py "
-#         "-i {input} "
-#         "-o {output}) >{log} 2>&1"
+rule build_combined_results:
+    input:
+        b=config.baf_template,
+        r=config.rdr_template
+    output:
+        config.combined_results_template
+    params:
+        c=" ".join(config.chromosomes),
+        s=config.parse_region_size(config.bin_size),
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.combined_results_template)
+    shell:
+        "(python scripts/build_combined_results.py "
+        "-b {input.b} "
+        "-r {input.r} "
+        "-o {output} ) >{log} 2>&1"
 
-# rule plot_rdr:
-#     input:
-#         i=config.combined_results_template
-#     output:
-#         config.rdr_plot_template
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.rdr_plot_template)
-#     shell:
-#         "(python scripts/plot_rdr.py "
-#         "-i {input} "
-#         "-o {output}) >{log} 2>&1"
+
+rule plot_baf:
+    input:
+        config.combined_results_template
+    output:
+        config.baf_plot_template
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.baf_plot_template)
+    shell:
+        "(python scripts/plot_baf.py "
+        "-i {input} "
+        "-o {output}) >{log} 2>&1"
+
+
+rule plot_rdr:
+    input:
+        i=config.combined_results_template
+    output:
+        config.rdr_plot_template
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.rdr_plot_template)
+    shell:
+        "(python scripts/plot_rdr.py "
+        "-i {input} "
+        "-o {output}) >{log} 2>&1"
 
 
 # # RUN CFCLONE 

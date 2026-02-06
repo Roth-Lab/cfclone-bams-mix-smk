@@ -384,6 +384,24 @@ class ConfigManager:
         files.append(self.down_sampled_summary_file)
         
         files.append(self.mixed_bams_summary_file)
+        
+        for c in self.coverage_ids:
+            
+            for i in self.proportion_ids:
+                
+                files.append(
+                    str(self.rdr_plot_template).format(
+                        coverage_id=c,
+                        proportion_id=i
+                    )
+                )
+                
+                files.append(
+                    str(self.baf_plot_template).format(
+                        coverage_id=c,
+                        proportion_id=i
+                    )
+                )
 
         return files
 
