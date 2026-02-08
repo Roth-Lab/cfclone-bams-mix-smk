@@ -411,7 +411,7 @@ class ConfigManager:
 
         patient = self.patient
         
-        sample = self.get_sample(wildcards)
+        sample = self.get_sample(wildcards.bam_id)
 
         return str(self.bam_file_template).format(patient=patient, sample=sample)
 
@@ -419,12 +419,12 @@ class ConfigManager:
 
         patient = self.patient
         
-        sample = self.get_sample(wildcards)
+        sample = self.get_sample(wildcards.bam_id)
 
         return str(self.bai_file_template).format(patient=patient, sample=sample)
     
-    def get_sample(self, wildcards: dict) -> str:
-        return self.initial_sample if wildcards.bam_id == 'initial' else self.final_sample
+    def get_sample(self, bam_id: str) -> str:
+        return self.initial_sample if bam_id == 'initial' else self.final_sample
     
     def get_bams_to_mix(self, wildcards: dict) -> list[str]:
         
@@ -432,7 +432,13 @@ class ConfigManager:
         
         for b in self.bam_ids:
             
-            if self.compute_down_sample_proportion(wildcards) > 0.:
+            p = self.compute_bam_proportion(
+                bam_id=b,
+                coverage_id=int(wildcards.coverage_id),
+                proportion_id=int(wildcards.proportion_id)
+            )
+            
+            if p > 0.:
             
                 files.append(
                     str(self.down_sampled_bam_file_template).format(
@@ -547,24 +553,27 @@ class ConfigManager:
         return files
 
     # HELPERS TO COMPUTE FRACTION OF BAM FILE NEED TO KEEP
-
+    
     def compute_down_sample_proportion(self, wildcards: dict) -> float:
+        return self.compute_bam_proportion(
+            bam_id=wildcards.bam_id,
+            coverage_id=int(wildcards.coverage_id),
+            proportion_id=int(wildcards.proportion_id),
+        )
+
+    def compute_bam_proportion(self, bam_id: str, coverage_id: int, proportion_id: int) -> float:
 
         # LOAD TOTAL NUMBER OF READS IN BAM FILE
         
         df_num_reads = pd.read_csv(self.get_read_counts_file, sep="\t")
         
-        sample = self.get_sample(wildcards)
+        sample = self.get_sample(bam_id)
 
         bam_file = "{}.bam".format(sample)
 
         num_reads_avail = df_num_reads.loc[df_num_reads["file"] == bam_file, "reads"].values[0]
 
         # COMPUTE TOTAL NUMBER OF READS NEEDED FROM BAM FILE
-
-        coverage_id = int(wildcards["coverage_id"])
-        
-        proportion_id = int(wildcards["proportion_id"])
 
         cov = self.coverages[coverage_id]
         
