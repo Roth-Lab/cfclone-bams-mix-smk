@@ -428,21 +428,19 @@ class ConfigManager:
     
     def get_bams_to_mix(self, wildcards: dict) -> list[str]:
         
-        coverage_id = int(wildcards['coverage_id'])
-        
-        proportion_id = int(wildcards['proportion_id'])
-        
         files = []
         
         for b in self.bam_ids:
             
-            files.append(
-                str(self.down_sampled_bam_file_template).format(
-                    coverage_id=coverage_id,
-                    proportion_id=proportion_id,
-                    bam_id=b
+            if self.compute_down_sample_proportion(wildcards) > 0.:
+            
+                files.append(
+                    str(self.down_sampled_bam_file_template).format(
+                        coverage_id=int(wildcards['coverage_id']),
+                        proportion_id=int(wildcards['proportion_id']),
+                        bam_id=b
+                    )
                 )
-            )
         
         return files
     
@@ -540,8 +538,8 @@ class ConfigManager:
 
             files.append(
                 str(file_template).format(
-                    coverage_id=wildcards["coverage_id"],
-                    proportion_id=wildcards["proportion_id"],
+                    coverage_id=int(wildcards["coverage_id"]),
+                    proportion_id=int(wildcards["proportion_id"]),
                     chrom=c,
                 )
             )
