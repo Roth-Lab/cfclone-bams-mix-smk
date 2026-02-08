@@ -554,12 +554,15 @@ class ConfigManager:
 
     # HELPERS TO COMPUTE FRACTION OF BAM FILE NEED TO KEEP
     
-    def compute_down_sample_proportion(self, wildcards: dict) -> float:
-        return self.compute_bam_proportion(
+    def compute_down_sample_proportion(self, wildcards: dict) -> str:
+        
+        bam_file_prop = self.compute_bam_proportion(
             bam_id=wildcards.bam_id,
             coverage_id=int(wildcards.coverage_id),
             proportion_id=int(wildcards.proportion_id),
         )
+        
+        return format(bam_file_prop, "f")  # store as string for cli
 
     def compute_bam_proportion(self, bam_id: str, coverage_id: int, proportion_id: int) -> float:
 
@@ -593,7 +596,7 @@ class ConfigManager:
 
         bam_file_prop = num_reads_needed / num_reads_avail
 
-        return format(bam_file_prop, "f")  # store as string
+        return bam_file_prop
     
 
     # HELPERS FOR LOG AND BENCHMARK FILES
