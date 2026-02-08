@@ -534,21 +534,14 @@ class ConfigManager:
 
     def gather_files_by_chrom(self, file_template: Path, wildcards: dict) -> list[str]:
 
-        patient_id = wildcards["patient_id"]
-
-        sample_id = wildcards["sample_id"]
-
-        coverage_id = wildcards["coverage_id"]
-
         files = []
 
         for c in self.chromosomes:
 
             files.append(
                 str(file_template).format(
-                    patient_id=patient_id,
-                    sample_id=sample_id,
-                    coverage_id=coverage_id,
+                    coverage_id=wildcards["coverage_id"],
+                    proportion_id=wildcards["proportion_id"],
                     chrom=c,
                 )
             )
