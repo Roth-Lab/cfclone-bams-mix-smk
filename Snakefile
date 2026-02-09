@@ -342,7 +342,7 @@ rule build_rdr:
 
 rule build_allele_counts_chrom:
     input:
-        bam=config.mixed_bam_file_template
+        bam=config.mixed_bam_file_template,
         bai=config.mixed_bam_file_template,
         s=config.get_snp_file
     output:
