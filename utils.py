@@ -458,6 +458,34 @@ class ConfigManager:
         
         return files
     
+    def gather_down_sampled_summary_files(self, wildcards: dict) -> list[str]:
+        
+        files = []
+        
+        for c in self.coverage_ids:
+            
+            for p in self.proportion_ids:
+        
+                for b in self.bam_ids:
+            
+                    p = self.compute_bam_proportion(
+                        bam_id=b,
+                        coverage_id=int(wildcards.coverage_id),
+                        proportion_id=int(wildcards.proportion_id)
+                    )
+                    
+                    if p > 0.:
+                    
+                        files.append(
+                            str(self.down_sampled_total_reads_template).format(
+                                coverage_id=int(wildcards['coverage_id']),
+                                proportion_id=int(wildcards['proportion_id']),
+                                bam_id=b
+                            )
+                        )
+        
+        return files
+    
     @property
     def get_read_counts_file(self) -> str:
         return str(self.read_counts_file_template).format(patient=self.patient)

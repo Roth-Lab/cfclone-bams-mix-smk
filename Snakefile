@@ -153,7 +153,7 @@ rule write_mixed_bam_summary_file:
 
 rule merge_down_sampled_summary_files:
     input:
-        config.gather_files(config.down_sampled_total_reads_template)
+        config.gather_down_sampled_summary_files
     output:
         config.down_sampled_summary_file
     conda:
