@@ -82,7 +82,7 @@ rule write_down_sampled_bam_summary_file:
         r=config.read_length,
         g=config.genome_length,
         p=config.patient,
-        s=config.get_sample, 
+        s=lambda wildcards: config.get_sample(wildcards.bam_id), 
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
     shell:
