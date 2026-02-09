@@ -95,8 +95,8 @@ rule write_down_sampled_bam_summary_file:
         "--proportion {params.i} "
         "--bam-id {wildcards.bam_id} "
         "--read-length {params.r} "
-        "--coverage-id {wildcards.proportion_id} "
-        "--proportion-id {wildcards.coverage_id} "
+        "--coverage-id {wildcards.coverage_id} "
+        "--proportion-id {wildcards.proportion_id} "
         "--genome-length {params.g} ) >{log} 2>&1"
 
 
