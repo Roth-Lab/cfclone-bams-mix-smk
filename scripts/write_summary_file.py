@@ -20,6 +20,8 @@ def main(args):
     df.insert(1, 'sample', args.sample)
     
     df.insert(2, 'coverage', args.coverage)
+    
+    df.insert(3, 'proportion', args. proportion)
 
     df.to_csv(args.out_file, index=False, sep="\t")
 
@@ -40,6 +42,8 @@ if __name__ == "__main__":
     parser.add_argument("--sample", required=True, type=str)
     
     parser.add_argument("--coverage", required=True, type=float)
+    
+    parser.add_argument("--proportion", required=True, type=float)
     
     cli_args = parser.parse_args()
     

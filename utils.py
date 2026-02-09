@@ -385,6 +385,8 @@ class ConfigManager:
         
         files.append(self.mixed_bams_summary_file)
         
+        files.append(self.summary_file)
+        
         for c in self.coverage_ids:
             
             for i in self.proportion_ids:
@@ -533,6 +535,25 @@ class ConfigManager:
 
                 files.append(file)
 
+        return files
+    
+    
+    @property
+    def gather_cfclone_summary_files(self) -> list[str]:
+        
+        files = []
+        
+        for c in self.coverage_ids:
+            
+            for i in self.proportion_ids:
+                
+                files.append(
+                    str(self.replicate_summary_template).format(
+                    coverage_id=c,
+                    proportion_id=i
+                    )
+                )
+        
         return files
     
 
