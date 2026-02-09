@@ -458,7 +458,8 @@ class ConfigManager:
         
         return files
     
-    def gather_down_sampled_summary_files(self, wildcards: dict) -> list[str]:
+    @property 
+    def gather_down_sampled_summary_files(self) -> list[str]:
         
         files = []
         
@@ -470,16 +471,16 @@ class ConfigManager:
             
                     p = self.compute_bam_proportion(
                         bam_id=b,
-                        coverage_id=int(wildcards.coverage_id),
-                        proportion_id=int(wildcards.proportion_id)
+                        coverage_id=c,
+                        proportion_id=p,
                     )
                     
                     if p > 0.:
                     
                         files.append(
                             str(self.down_sampled_total_reads_template).format(
-                                coverage_id=int(wildcards['coverage_id']),
-                                proportion_id=int(wildcards['proportion_id']),
+                                coverage_id=c,
+                                proportion_id=p,
                                 bam_id=b
                             )
                         )
