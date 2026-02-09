@@ -73,7 +73,7 @@ def _plot(
     )
     
     ax.errorbar(
-        x=df_tmp['proportions'],
+        x=df_tmp['proportion'],
         y=df_tmp["mean"],
         yerr=[
             df_tmp["mean"] - df_tmp["lower_hdi"],
@@ -98,7 +98,7 @@ def _plot(
     #     )
     
     
-    sample = df_tmp['samples'].values[0]
+    sample = df_tmp['sample'].values[0]
     
     coverage = df_tmp['coverage'].values[0]
     
@@ -136,9 +136,9 @@ if __name__ == "__main__":
     
     parser = ArgumentParser()
     
-    parser.add_argument('-i', '--in-file', type=str, required=True)
+    parser.add_argument('-i', '--in-file', type=str, default="summary.tsv") 
     
-    parser.add_argument('-o', '--out-file', type=str, required=True)
+    parser.add_argument('-o', '--out-file', type=str, default="lol.png")
 
     cli_args = parser.parse_args()
     

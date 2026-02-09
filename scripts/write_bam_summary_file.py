@@ -19,7 +19,7 @@ def main(args):
         
         obs_cov = "Nan"
     
-    df = pd.DataFrame(data={'num_reads': [num_reads], 'observed_coverage': [obs_cov]})
+    df = pd.DataFrame(data={'actual_coverage': [obs_cov]})
     
     df.insert(0, 'patient', args.patient)
     

@@ -86,7 +86,7 @@ rule write_down_sampled_bam_summary_file:
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
     shell:
-        "(python scripts/write_down_sample_summary_file.py "
+        "(python scripts/write_bam_summary_file.py "
         "-i {input.bam} "
         "-o {output} "
         "--patient {params.p} "
@@ -133,11 +133,11 @@ rule write_mixed_bam_summary_file:
         r=config.read_length,
         g=config.genome_length,
         p=config.patient,
-        s=config.get_sample, 
+        s=config.get_mixed_samples, 
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
     shell:
-        "(python scripts/write_down_sample_summary_file.py "
+        "(python scripts/write_bam_summary_file.py "
         "-i {input.bam} "
         "-o {output} "
         "--patient {params.p} "
@@ -145,8 +145,8 @@ rule write_mixed_bam_summary_file:
         "--coverage {params.c} "
         "--proportion {params.i} "
         "--bam-id 'mixed' "
-        "--coverage-id {wildcards.proportion_id} "
-        "--proportion-id {wildcards.coverage_id} "
+        "--coverage-id {wildcards.coverage_id} "
+        "--proportion-id {wildcards.proportion_id} "
         "--read-length {params.r} "
         "--genome-length {params.g} ) >{log} 2>&1"
 

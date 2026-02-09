@@ -430,6 +430,10 @@ class ConfigManager:
     def get_sample(self, bam_id: str) -> str:
         return self.initial_sample if bam_id == 'initial' else self.final_sample
     
+    @property
+    def get_mixed_samples(self) -> str:
+        return self.initial_sample + self.final_sample
+    
     def get_bams_to_mix(self, wildcards: dict) -> list[str]:
         
         files = []
