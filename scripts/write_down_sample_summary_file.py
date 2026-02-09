@@ -25,11 +25,11 @@ def main(args):
     
     df.insert(1, 'sample', args.sample)
     
-    df.insert(2, 'coverage', args.coverage)
+    df.insert(2, 'bam_id', args.bam_id)
     
-    df.insert(3, 'proportion', args.proportion)
+    df.insert(3, 'coverage', args.coverage)
     
-    df.insert(4, 'bam_id', args.bam_id)
+    df.insert(4, 'proportion', args.proportion)
     
     df.to_csv(args.out_file, sep='\t', index=False)
     
