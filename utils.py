@@ -372,7 +372,7 @@ class ConfigManager:
     
     @property
     def plot_summary_file(self) -> Path:
-        return self.outputs.joinpath('detection.png')
+        return self.outputs.joinpath('tfs.png')
 
     @property
     def pipeline_files(self) -> list[str]:
@@ -386,6 +386,8 @@ class ConfigManager:
         files.append(self.mixed_bams_summary_file)
         
         files.append(self.summary_file)
+        
+        files.append(self.plot_summary_file)
         
         for c in self.coverage_ids:
             
