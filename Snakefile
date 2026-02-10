@@ -30,7 +30,8 @@ pathvars:
     pipeline_dir=str(config.replicate_pipeline_dir),
 
 
-ruleorder: down_sample_bam_file > merge_down_sampled_bam_files > write_down_sampled_bam_summary_file > write_mixed_bam_summary_file
+# ruleorder: down_sample_bam_file > merge_down_sampled_bam_files > write_down_sampled_bam_summary_file > write_mixed_bam_summary_file
+ruleorder: down_sample_bam_file > merge_down_sampled_bam_files > write_mixed_bam_summary_file
 
 rule build_config_file:
     input:
@@ -66,38 +67,6 @@ rule down_sample_bam_file:
         samtools index {output.bam} 1>> {log} 2>&1
         """
         # samtools view --write-index -b -s {params.fraction} {input.bam} -o {output.bam}##idx##{output.bai} 1> {log} 2>&1 # returns error "Random alignment retrieval only works for index ...""
-
-rule write_down_sampled_bam_summary_file:
-    input:
-        bam=config.down_sampled_bam_file_template,
-        bai=config.down_sampled_bai_file_template,
-    output:
-        config.down_sampled_total_reads_template
-    conda:
-        "envs/python.yaml"
-    threads: 2
-    log:
-        config.get_log_file(config.down_sampled_total_reads_template)
-    params:
-        r=config.read_length,
-        g=config.genome_length,
-        p=config.patient,
-        s=lambda wildcards: config.get_sample(wildcards.bam_id), 
-        c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
-        i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
-    shell:
-        "(python scripts/write_bam_summary_file.py "
-        "-i {input.bam} "
-        "-o {output} "
-        "--patient {params.p} "
-        "--sample {params.s} "
-        "--coverage {params.c} "
-        "--proportion {params.i} "
-        "--bam-id {wildcards.bam_id} "
-        "--read-length {params.r} "
-        "--coverage-id {wildcards.coverage_id} "
-        "--proportion-id {wildcards.proportion_id} "
-        "--genome-length {params.g} ) >{log} 2>&1"
 
 
 rule merge_down_sampled_bam_files:
@@ -149,20 +118,6 @@ rule write_mixed_bam_summary_file:
         "--proportion-id {wildcards.proportion_id} "
         "--read-length {params.r} "
         "--genome-length {params.g} ) >{log} 2>&1"
-
-
-rule merge_down_sampled_summary_files:
-    input:
-        config.gather_down_sampled_summary_files
-    output:
-        config.down_sampled_summary_file
-    conda:
-        "envs/python.yaml"
-    log:
-        config.get_log_file(config.down_sampled_summary_file)
-    shell:
-        "(python scripts/merge_tables.py -i {input} -o {output} ) >{log} 2>&1"
-
 
 rule merge_mixed_bams_summary_files:
     input:

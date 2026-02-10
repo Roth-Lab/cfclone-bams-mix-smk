@@ -200,7 +200,7 @@ class ConfigManager:
 
     @property
     def down_sampled_bam_file_template(self) -> Path:
-        return self.out_dir.joinpath("coverage_{coverage_id}", "proportion_{proportion_id}", "{bam_id}.bam")
+        return self.pipeline_dir.joinpath("coverage_{coverage_id}", "proportion_{proportion_id}", "{bam_id}.bam")
 
     @property
     def down_sampled_bai_file_template(self) -> Path:
@@ -381,32 +381,8 @@ class ConfigManager:
 
         files.append(self.copied_config)
         
-        files.append(self.down_sampled_summary_file)
-        
         files.append(self.mixed_bams_summary_file)
         
-        files.append(self.summary_file)
-        
-        files.append(self.plot_summary_file)
-        
-        for c in self.coverage_ids:
-            
-            for i in self.proportion_ids:
-                
-                files.append(
-                    str(self.rdr_plot_template).format(
-                        coverage_id=c,
-                        proportion_id=i
-                    )
-                )
-                
-                files.append(
-                    str(self.baf_plot_template).format(
-                        coverage_id=c,
-                        proportion_id=i
-                    )
-                )
-
         return files
 
     # HELPERS FOR RULES
@@ -432,19 +408,21 @@ class ConfigManager:
     
     @property
     def get_mixed_samples(self) -> str:
-        return self.initial_sample + self.final_sample
+        return self.initial_sample + '+' + self.final_sample
     
     def get_bams_to_mix(self, wildcards: dict) -> list[str]:
         
         files = []
         
         for b in self.bam_ids:
-            
-            p = self.compute_bam_proportion(
-                bam_id=b,
-                coverage_id=int(wildcards.coverage_id),
-                proportion_id=int(wildcards.proportion_id)
-            )
+        
+            if b == 'initial':
+        
+                p = 1 - self.proportions[int(wildcards['proportion_id'])]
+        
+            else:
+        
+                p = self.proportions[int(wildcards['proportion_id'])]
             
             if p > 0.:
             
@@ -636,7 +614,13 @@ class ConfigManager:
 
         cov = self.coverages[coverage_id]
         
-        prop = self.proportions[proportion_id]
+        if bam_id == 'initial':
+        
+            prop = 1. - self.proportions[proportion_id]
+        
+        else:
+            
+            prop = self.proportions[proportion_id]
 
         num_reads_needed = int((self.genome_length / self.read_length) * cov * prop)
 
