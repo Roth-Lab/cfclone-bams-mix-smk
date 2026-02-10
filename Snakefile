@@ -30,7 +30,6 @@ pathvars:
     pipeline_dir=str(config.replicate_pipeline_dir),
 
 
-# ruleorder: down_sample_bam_file > merge_down_sampled_bam_files > write_down_sampled_bam_summary_file > write_mixed_bam_summary_file
 ruleorder: down_sample_bam_file > merge_down_sampled_bam_files > write_mixed_bam_summary_file
 
 rule build_config_file:
