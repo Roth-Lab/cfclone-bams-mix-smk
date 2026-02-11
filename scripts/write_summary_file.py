@@ -17,11 +17,13 @@ def main(args):
 
     df.insert(0, 'patient', args.patient)
     
-    df.insert(1, 'sample', args.sample)
+    df.insert(1, 'initial_sample', args.initial_sample)
     
-    df.insert(2, 'coverage', args.coverage)
+    df.insert(2, 'final_sample', args.final_sample)
     
-    df.insert(3, 'proportion', args. proportion)
+    df.insert(3, 'coverage', args.coverage)
+    
+    df.insert(4, 'proportion', args. proportion)
 
     df.to_csv(args.out_file, index=False, sep="\t")
 
@@ -39,7 +41,9 @@ if __name__ == "__main__":
     
     parser.add_argument("--patient", required=True, type=str)
     
-    parser.add_argument("--sample", required=True, type=str)
+    parser.add_argument("--initial-sample", required=True, type=str)
+    
+    parser.add_argument("--final-sample", required=True, type=str)
     
     parser.add_argument("--coverage", required=True, type=float)
     

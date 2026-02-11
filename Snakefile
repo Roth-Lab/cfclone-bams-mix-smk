@@ -467,7 +467,8 @@ rule build_replicate_summary:
         config.replicate_summary_template
     params:
         p=config.patient,
-        s=config.get_sample, 
+        s_init=config.initial_sample,
+        s_final=config.final_sample,
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
     conda:
@@ -480,7 +481,8 @@ rule build_replicate_summary:
         "-t {input.t} "
         "-o {output} "
         "--patient {params.p} "
-        "--sample {params.s} "
+        "--initial-sample {params.s_init} "
+        "--final-sample {params.s_final} "
         "--coverage {params.c} "
         "--proportion {params.i}) >{log} 2>&1"
 
