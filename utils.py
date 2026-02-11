@@ -55,7 +55,7 @@ class ConfigManager:
     
     @property
     def cohort_tc_summary_file(self) -> str | None:
-        return self.config('cohort_tc_summary_file', None)
+        return self.config.get('cohort_tc_summary_file', None)
 
     # INPUT PATIENT DATA
 
