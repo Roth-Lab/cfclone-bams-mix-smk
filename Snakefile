@@ -18,6 +18,7 @@ onsuccess:
         imgs=[
             config.copied_config,
             config.plot_summary_file,
+            config.plot_summary_file_w_cohort,
         ],
     )
 
