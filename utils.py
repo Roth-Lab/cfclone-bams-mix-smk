@@ -381,6 +381,10 @@ class ConfigManager:
         return self.outputs.joinpath('tfs.png')
 
     @property
+    def plot_summary_file_w_cohort(self) -> Path:
+        return self.outputs.joinpath('tfs_w_cohort.png')
+
+    @property
     def pipeline_files(self) -> list[str]:
 
         files = []
@@ -392,6 +396,8 @@ class ConfigManager:
         files.append(self.summary_file)
         
         files.append(self.plot_summary_file)
+        
+        files.append(self.plot_summary_file_w_cohort)
         
         for c in self.coverage_ids:
             
