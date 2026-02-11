@@ -41,7 +41,7 @@ def _plot(
     
     assert num_patients == 1
     
-    samples = df_plot['sample'].unique()
+    samples = df_plot['final_sample'].unique()
     
     num_sample_ids = len(samples)
     
@@ -52,7 +52,7 @@ def _plot(
     num_coverage_ids = len(coverage_ids)
     
     assert num_coverage_ids == 1
-    
+   
     num_rows = 1
     
     num_cols = 1
@@ -84,21 +84,40 @@ def _plot(
         alpha=0.5,
     )
     
-    # if df_patient_tc is not None:
-    #     df = df_patient_tc.loc[df_patient_tc['sample_id'].isin(['VOA8553P', sample_id])]
-    #     ax.errorbar(
-    #         x=[0., 1.],
-    #         y=df['mean'],
-    #         yerr=[
-    #             df['mean'] - df['lower_hdi'],
-    #             df['upper_hdi'] - df['mean'],
-    #         ],
-    #         fmt="o",
-    #         c='orange',
-    #     )
+    if df_patient_tc is not None:
+        
+        for s in ['initial_sample', 'final_sample']:
+            
+            patient = df_tmp['patient'].values[0]
+            
+            sample = df_tmp[s].values[0]
+            
+            df = df_patient_tc.loc[
+                (df_patient_tc['patient_id'] == patient) & (df_patient_tc['sample_id'] == sample),
+                ['mean', 'lower_hdi', 'upper_hdi']
+            ]
+            
+            if s == 'initial_sample':
+                
+                x = 0.
+            
+            else:
+                
+                x = 1.
+                
+            ax.errorbar(
+                x=x,
+                y=df['mean'],
+                yerr=[
+                    df['mean'] - df['lower_hdi'],
+                    df['upper_hdi'] - df['mean'],
+                ],
+                fmt="o",
+                c='orange',
+            )
     
     
-    sample = df_tmp['sample'].values[0]
+    sample = df_tmp['final_sample'].values[0]
     
     coverage = df_tmp['coverage'].values[0]
     
@@ -123,9 +142,48 @@ def main(args):
     
     df = pd.read_csv(args.in_file, sep='\t')
     
+    patients = df['patient'].unique()
+    
+    initial_samples = df['initial_sample'].unique()
+    
+    final_samples = df['final_sample'].unique()
+    
+    assert len(patients) == 1
+    
+    assert len(initial_samples) == 1
+    
+    assert len(final_samples) == 1
+    
+    if args.cohort_tc_summary_file is not None:
+        
+        df_cohort = pd.read_csv(args.cohort_tc_summary_file, sep='\t')
+        
+        patients_cohort = df_cohort['patient_id'].unique()
+        
+        samples_cohort = df_cohort['sample_id'].unique()
+        
+        assert set(list(patients)) < set(list(patients_cohort))
+        
+        samples = list(initial_samples) + list(final_samples)
+        
+        assert set(samples) < set(list(samples_cohort))
+        
+        df_cohort = (
+            
+            df_cohort
+            
+            .loc[lambda df: (df['patient_id'] == patients[0]) & (df['sample_id'].isin(samples))]
+            
+            .drop_duplicates(subset=['patient_id', 'sample_id'])  # just use the first run
+        )
+        
+    else:
+        
+        df_cohort = None
+        
     plot(
         df_plot=df,
-        show=True,
+        df_patient_tc=df_cohort,
         output_path=args.out_file,
     )
     
@@ -136,9 +194,11 @@ if __name__ == "__main__":
     
     parser = ArgumentParser()
     
-    parser.add_argument('-i', '--in-file', type=str, default="summary.tsv") 
+    parser.add_argument('-i', '--in-file', type=str, required=True) 
     
-    parser.add_argument('-o', '--out-file', type=str, default="lol.png")
+    parser.add_argument('-o', '--out-file', type=str, required=True)
+    
+    parser.add_argument("--cohort-tc-summary-file", type=lambda x: None if x == 'None' else x, required=True)
 
     cli_args = parser.parse_args()
     

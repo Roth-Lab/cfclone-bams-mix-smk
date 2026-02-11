@@ -50,6 +50,12 @@ class ConfigManager:
     @property
     def final_sample(self) -> str:
         return self.config['final_sample']
+    
+    # INPUT COHORT DATA 
+    
+    @property
+    def cohort_tc_summary_file(self) -> str | None:
+        return self.config('cohort_tc_summary_file', None)
 
     # INPUT PATIENT DATA
 

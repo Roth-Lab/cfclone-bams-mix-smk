@@ -509,5 +509,7 @@ rule plot_summaries:
         "envs/python.yaml"
     log:
         config.get_log_file(config.plot_summary_file)
+    params:
+        config.cohort_tc_summary_file
     shell:
-        "(python scripts/plot_tf.py -i {input} -o {output}) >{log} 2>&1"
+        "(python scripts/plot_tf.py -i {input} -o {output} --cohort-tc-summary-file {params}) >{log} 2>&1"
