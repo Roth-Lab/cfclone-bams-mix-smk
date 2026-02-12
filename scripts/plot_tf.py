@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 
 
 plot_settings = {
-    "axes.titlesize": 14,
+    "axes.titlesize": 10,
     "axes.titleweight": "bold",
-    "axes.labelsize": 12,
+    "axes.labelsize": 10,
     "axes.labelweight": "bold",
+    "figure.titleweight": "bold",
+    "figure.titlesize": 12,
 }
 
 
@@ -19,65 +21,92 @@ def plot(
     show: bool = False
 ) -> None:
     with plt.rc_context(plot_settings):
-        _plot(
-            df_plot=df_plot,
-            df_patient_tc=df_patient_tc,
-            figsize=figsize,
-            output_path=output_path,
-            show=show
-        )
     
-def _plot(
-    df_plot: pd.DataFrame,
-    df_patient_tc: pd.DataFrame | None = None,
-    figsize: tuple[int, int] | None = None,
-    output_path: str | None = None,
-    show: bool = False
-) -> None:
-    
-    patients = df_plot['patient'].unique()
-    
-    num_patients = len(patients)
-    
-    assert num_patients == 1
-    
-    samples = df_plot['final_sample'].unique()
-    
-    num_sample_ids = len(samples)
-    
-    assert num_sample_ids == 1
-    
-    coverage_ids = df_plot['coverage'].unique()
-    
-    num_coverage_ids = len(coverage_ids)
-    
-    assert num_coverage_ids == 1
-   
-    num_rows = 1
-    
-    num_cols = 1
-    
-    figsize = (num_cols * 6, num_rows * 4)
+        patients = df_plot['patient'].unique()
         
-    fig = plt.figure(figsize=figsize, constrained_layout=True)
+        num_patients = len(patients)
+        
+        assert num_patients == 1
+        
+        initial_samples = df_plot['initial_sample'].unique()
+        
+        num_initial_samples = len(initial_samples)
+        
+        assert num_initial_samples == 1
     
-    gs = fig.add_gridspec(num_rows, num_cols)
+        coverage_ids = df_plot['coverage'].unique()
+        
+        num_coverage_ids = len(coverage_ids)
+        
+        assert num_coverage_ids == 1
+        
+        samples = df_plot['final_sample'].unique()
+        
+        num_samples = len(samples)
     
-    ax = fig.add_subplot(gs[0, 0])
+        num_cols = int(np.ceil(np.sqrt(num_samples)))
+        
+        num_rows = int(np.ceil(np.sqrt(num_samples / num_cols)))
+        
+        figsize = (num_cols * 6, num_rows * 4)
+            
+        fig = plt.figure(figsize=figsize, constrained_layout=True)
+        
+        gs = fig.add_gridspec(num_rows, num_cols)
+        
+        for row_idx in range(num_rows):
+            
+            for col_idx in range(num_cols):
+                
+                ax = fig.add_subplot(gs[row_idx, col_idx])
+                
+                sample_idx = row_idx * num_cols + col_idx
+                
+                if sample_idx < num_samples:
+                
+                    df_sample = df_plot.loc[df_plot['final_sample'] == samples[sample_idx]]
+                    
+                    plot_sample(
+                        df_sample=df_sample,
+                        ax=ax,
+                        df_patient_tc=df_patient_tc,
+                    )
+                    
+                else:
+                    
+                    ax.axis('off')
+                    
+        fig.suptitle("Patient: {p}\n Initial sample:{i}\n Coverage: {c}".format(p=patients[0], i=initial_samples[0], c=coverage_ids[0]))
+                
+        if output_path:
+            
+            plt.savefig(output_path)
+
+        if show:
+            
+            plt.show()
+
+        plt.close()
+        
     
-    df_tmp = df_plot.sort_values(by=['proportion'])
+def plot_sample(
+    df_sample: pd.DataFrame,
+    ax: plt.Axes,
+    df_patient_tc: pd.DataFrame | None = None,
+):
+    df_sample = df_sample.sort_values(by=['proportion'])
     
     ax.scatter(
-        x=df_tmp['proportion'], 
-        y=df_tmp["mean"]
+        x=df_sample['proportion'], 
+        y=df_sample["mean"]
     )
     
     ax.errorbar(
-        x=df_tmp['proportion'],
-        y=df_tmp["mean"],
+        x=df_sample['proportion'],
+        y=df_sample["mean"],
         yerr=[
-            df_tmp["mean"] - df_tmp["lower_hdi"],
-            df_tmp["upper_hdi"] - df_tmp["mean"],
+            df_sample["mean"] - df_sample["lower_hdi"],
+            df_sample["upper_hdi"] - df_sample["mean"],
         ],
         fmt="o",
         ecolor="gray",
@@ -88,9 +117,9 @@ def _plot(
         
         for s in ['initial_sample', 'final_sample']:
             
-            patient = df_tmp['patient'].values[0]
+            patient = df_sample['patient'].values[0]
             
-            sample = df_tmp[s].values[0]
+            sample = df_sample[s].values[0]
             
             df = df_patient_tc.loc[
                 (df_patient_tc['patient_id'] == patient) & (df_patient_tc['sample_id'] == sample),
@@ -116,27 +145,12 @@ def _plot(
                 c='orange',
             )
     
-    
-    sample = df_tmp['final_sample'].values[0]
-    
-    coverage = df_tmp['coverage'].values[0]
-    
     ax.set_ylabel("Tumour Content estimate")
     
-    ax.set_xlabel("Proportion of {}".format(sample))
+    ax.set_xlabel("Proportion of final sample".format(sample))
     
-    ax.set_title("Coverage {}X".format(round(coverage, 2)))
+    ax.set_title("Final sample: {}".format(sample))
 
-    if output_path:
-        
-        plt.savefig(output_path)
-
-    if show:
-        
-        plt.show()
-
-    plt.close()
-    
     
 def main(args):
     
@@ -151,8 +165,6 @@ def main(args):
     assert len(patients) == 1
     
     assert len(initial_samples) == 1
-    
-    assert len(final_samples) == 1
     
     if args.cohort_tc_summary_file is not None:
         
@@ -194,11 +206,11 @@ if __name__ == "__main__":
     
     parser = ArgumentParser()
     
-    parser.add_argument('-i', '--in-file', type=str, required=True) 
+    parser.add_argument('-i', '--in-file', type=str, default='summary_new_new.tsv') 
     
-    parser.add_argument('-o', '--out-file', type=str, required=True)
+    parser.add_argument('-o', '--out-file', type=str, default='lol.png')
     
-    parser.add_argument("--cohort-tc-summary-file", type=lambda x: None if x == 'None' else x, required=True)
+    parser.add_argument("--cohort-tc-summary-file", type=lambda x: None if x == 'None' else x, default='/home/matteo/projects/cfdna/data/cohort/tumour_contents.tsv')
 
     cli_args = parser.parse_args()
     
