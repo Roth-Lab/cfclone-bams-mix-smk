@@ -63,11 +63,7 @@ class ConfigManager:
 
     @property
     def cohort_tc_summary_file(self) -> str | None:
-<<<<<<< Updated upstream
         return self.config.get('cohort_tc_summary_file', None)
-=======
-        return self.config("cohort_tc_summary_file", None)
->>>>>>> Stashed changes
 
     # INPUT PATIENT DATA
 
