@@ -644,6 +644,7 @@ class ConfigManager:
         bam_file_prop = self.compute_bam_proportion(
             bam_id=wildcards.bam_id,
             coverage_id=int(wildcards.coverage_id),
+            final_sample_id=int(wildcards.final_sample_id),
             proportion_id=int(wildcards.proportion_id),
         )
 

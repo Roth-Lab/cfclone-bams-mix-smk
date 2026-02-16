@@ -107,7 +107,7 @@ rule write_mixed_bam_summary_file:
         p=config.patient,
         s=config.get_mixed_samples, 
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
-        f=lambda widlcards: config.final_samples[int(wildcards.final_sample_id)],
+        f=lambda wildcards: config.final_samples[int(wildcards.final_sample_id)],
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
     shell:
         "(python scripts/write_bam_summary_file.py "
@@ -472,7 +472,7 @@ rule build_replicate_summary:
     params:
         p=config.patient,
         s_init=config.initial_sample,
-        s_final=lambda widlcards: config.final_samples[int(widlcards.final_sample_id)]
+        s_final=lambda widlcards: config.final_samples[int(widlcards.final_sample_id)],
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
     conda:

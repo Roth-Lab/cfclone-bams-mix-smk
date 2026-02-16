@@ -145,6 +145,8 @@ def plot_sample(
                 c='orange',
             )
     
+    sample = df_sample['final_sample'].unique()[0]
+    
     ax.set_ylabel("Tumour Content estimate")
     
     ax.set_xlabel("Proportion of final sample".format(sample))
