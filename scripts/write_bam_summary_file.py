@@ -23,23 +23,21 @@ def main(args):
     
     df.insert(0, 'patient', args.patient)
     
-    df.insert(1, 'sample', args.sample)
+    df.insert(1, 'coverage_id', args.coverage_id)
     
-    df.insert(2, 'final_sample', args.final_sample)
+    df.insert(2, 'mixture_id', args.mixture_id)
     
-    df.insert(3, 'bam_id', args.bam_id)
+    df.insert(3, 'proportion_id', args.proportion_id)
     
-    df.insert(4, 'coverage_id', args.coverage_id)
+    df.insert(4, 'data_seed', args.data_seed)
     
-    df.insert(5, 'final_sample_id', args.final_sample_id)
+    df.insert(5, 'bam_id', args.bam_id)
     
-    df.insert(6, 'proportion_id', args.proportion_id)
+    df.insert(6, 'coverage', args.coverage)
     
-    df.insert(7, 'coverage', args.coverage)
+    df.insert(7, 'mixture', args.mixture)
     
     df.insert(8, 'proportion', args.proportion)
-    
-    df.insert(9, 'data_seed', args.data_seed)
     
     df.to_csv(args.out_file, sep='\t', index=False)
     
@@ -56,27 +54,21 @@ if __name__ == "__main__":
     
     parser.add_argument('--patient', type=str, required=True)
     
-    parser.add_argument('--sample', type=str, required=True)
-    
-    parser.add_argument('--coverage', type=float, required=True)
-    
     parser.add_argument("--coverage-id", type=int, required=True)
     
-    parser.add_argument("--final-sample", type=str, required=True)
-    
-    parser.add_argument("--final-sample-id", type=int, required=True)
-    
-    parser.add_argument("--proportion", type=float, required=True)
+    parser.add_argument("--mixture-id", type=int, required=True)
     
     parser.add_argument("--proportion-id", type=int, required=True)
     
     parser.add_argument("--data-seed", type=int, required=True)
     
     parser.add_argument("--bam-id", type=str, required=True)
-
-    parser.add_argument('--read-length', type=int, required=True)
     
-    parser.add_argument('--genome-length', type=int, required=True)
+    parser.add_argument('--coverage', type=float, required=True)
+    
+    parser.add_argument('--mixture', type=str, required=True)
+    
+    parser.add_argument("--proportion", type=float, required=True)
     
     cli_args = parser.parse_args()
     

@@ -100,12 +100,9 @@ rule write_mixed_bam_summary_file:
     log:
         config.get_log_file(config.mixed_bam_total_reads_template)
     params:
-        r=config.read_length,
-        g=config.genome_length,
         p=config.patient,
-        s=config.get_mixed_samples, 
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
-        f=lambda wildcards: config.final_samples[int(wildcards.final_sample_id)],
+        s=config.get_mixed_samples, 
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
         d=lambda wildcards: int(wildcards.data_seed_id),
     shell:
@@ -113,17 +110,14 @@ rule write_mixed_bam_summary_file:
         "-i {input.bam} "
         "-o {output} "
         "--patient {params.p} "
-        "--sample {params.s} "
-        "--coverage {params.c} "
-        "--final-sample {params.s} "
-        "--proportion {params.i} "
+        "--coverage-id {wildcards.coverage_id} "
+        "--mixture-id {wildcards.mixture_id} "
+        "--proportion-id {wildcards.proportion_id} "
         "--data-seed {params.d} "
         "--bam-id 'mixed' "
-        "--coverage-id {wildcards.coverage_id} "
-        "--final-sample-id {wildcards.final_sample_id} "
-        "--proportion-id {wildcards.proportion_id} "
-        "--read-length {params.r} "
-        "--genome-length {params.g} ) >{log} 2>&1"
+        "--coverage {params.c} "
+        "--mixture {params.s} "
+        "--proportion {params.i} ) >{log} 2>&1"
 
 rule merge_mixed_bams_summary_files:
     input:
