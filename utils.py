@@ -545,7 +545,7 @@ class ConfigManager:
     def get_bam_file(self, wildcards: dict) -> str:
         return str(self.bam_file_template).format(
             patient=self.patient, 
-            sample=int(self.mixtures[wildcards.mixture_id][wildcards.bam_id]),
+            sample=self.mixtures[int(wildcards.mixture_id)][wildcards.bam_id],
         )
 
     def get_bai_file(self, wildcards: dict) -> str:
@@ -553,9 +553,9 @@ class ConfigManager:
 
     def get_mixed_samples(self, wildcards: dict) -> str:
         return (
-            self.initial_sample
+            self.mixtures[int(wildcards.mixture_id)]['initial']
             + "+"
-            + self.final_samples[int(wildcards.final_sample_id)]
+            + self.mixtures[int(wildcards.mixture_id)]['final']
         )
 
     def get_bams_to_mix(self, wildcards: dict) -> list[str]:
@@ -574,7 +574,9 @@ class ConfigManager:
 
         for b in self.bam_ids:
             
-            p = self.proportions[proportion_id] if b == 'final' else 1 - p
+            prop = self.proportions[proportion_id]
+            
+            p = prop if b == 'final' else 1 - prop
 
             if p > 0.:
 
