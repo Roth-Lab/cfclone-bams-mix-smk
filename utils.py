@@ -471,7 +471,7 @@ class ConfigManager:
                         files.append(
                             str(self.experiment_configuration).format(
                                 coverage_id=c,
-                                final_sample_ids=s,
+                                final_sample_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
@@ -480,7 +480,7 @@ class ConfigManager:
                         files.append(
                             str(self.merged_tumour_content_file).format(
                                 coverage_id=c,
-                                final_sample_ids=s,
+                                final_sample_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
@@ -489,7 +489,7 @@ class ConfigManager:
                         files.append(
                             str(self.merged_evidence_file).format(
                                 coverage_id=c,
-                                final_sample_ids=s,
+                                final_sample_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
@@ -498,7 +498,7 @@ class ConfigManager:
                         files.append(
                             str(self.merged_summary_file).format(
                                 coverage_id=c,
-                                final_sample_ids=s,
+                                final_sample_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
