@@ -61,10 +61,11 @@ rule down_sample_bam_file:
     benchmark:
         config.get_benchmark_file(config.down_sampled_bam_file_template)
     params:
-        config.compute_down_sample_proportion
+        prop=config.compute_down_sample_proportion,
+        seed=lambda wildcards: int(wildcards.data_seed_id)
     shell:
         """
-        samtools view -b --subsample.seed {} --subsample {params} {input.bam} -o {output.bam} 1> {log} 2>&1
+        samtools view -b --subsample.seed {params.seed} --subsample {params.prop} {input.bam} -o {output.bam} 1> {log} 2>&1
         samtools index {output.bam} 1>> {log} 2>&1
         """
         # samtools view -b -s {params} {input.bam} -o {output.bam} 1> {log} 2>&1
