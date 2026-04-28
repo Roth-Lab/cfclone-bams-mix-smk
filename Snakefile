@@ -111,7 +111,7 @@ rule write_mixed_bam_summary_file:
         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
         f=lambda wildcards: config.final_samples[int(wildcards.final_sample_id)],
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
-        r=lambda wildcards: int(wildcards.data_seed_id),
+        d=lambda wildcards: int(wildcards.data_seed_id),
     shell:
         "(python scripts/write_bam_summary_file.py "
         "-i {input.bam} "
@@ -121,7 +121,7 @@ rule write_mixed_bam_summary_file:
         "--coverage {params.c} "
         "--final-sample {params.s} "
         "--proportion {params.i} "
-        "--data-seed {params.r} "
+        "--data-seed {params.d} "
         "--bam-id 'mixed' "
         "--coverage-id {wildcards.coverage_id} "
         "--final-sample-id {wildcards.final_sample_id} "
