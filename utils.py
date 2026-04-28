@@ -20,6 +20,14 @@ class ConfigManager:
     @property
     def final_sample_ids(self) -> list[int]:
         return list(range(len(self.final_samples)))
+    
+    @property
+    def mixtures(self) -> dict[int, dict[str, str]]:
+        return self.config['mixtures']
+    
+    @property
+    def mixture_ids(self) -> list[int]:
+        return list(self.mixtures.keys())
 
     @property
     def increment(self) -> float:
@@ -234,7 +242,8 @@ class ConfigManager:
     def down_sampled_bam_file_template(self) -> Path:
         return self.pipeline_dir.joinpath(
             "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
+            # "final_sample_{final_sample_id}",
+            "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
             "{bam_id}.bam",
@@ -244,7 +253,8 @@ class ConfigManager:
     def mixed_bam_file_template(self) -> Path:
         return self.out_dir.joinpath(
             "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
+            # "final_sample_{final_sample_id}",
+            "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
             "mixed.bam",
@@ -285,7 +295,8 @@ class ConfigManager:
         return self.pipeline_dir.joinpath(
             "working",
             "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
+            # "final_sample_{final_sample_id}",
+            "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
         )
@@ -357,7 +368,8 @@ class ConfigManager:
         return self.cfclone_input_dir.joinpath(
             "ctdna",
             "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
+            # "final_sample_{final_sample_id}",
+            "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
             "data.tsv.gz",
@@ -369,7 +381,8 @@ class ConfigManager:
     def cfclone_out_dir(self):
         return self.out_dir.joinpath(
             "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
+            # "final_sample_{final_sample_id}",
+            "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
             "out_dir",
@@ -379,7 +392,8 @@ class ConfigManager:
     def cfclone_pipeline_dir(self):
         return self.out_dir.joinpath(
             "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
+            # "final_sample_{final_sample_id}",
+            "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
             "pipeline_dir",
@@ -397,7 +411,8 @@ class ConfigManager:
             "input",
             "ctdna",
             "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
+            # "final_sample_{final_sample_id}",
+            "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
             "data.tsv.gz",
@@ -462,7 +477,8 @@ class ConfigManager:
 
         for c in self.coverage_ids:
             
-            for s in self.final_sample_ids:
+            # for s in self.final_sample_ids:
+            for s in self.mixture_ids:
 
                 for i in self.proportion_ids:
                     
@@ -471,7 +487,7 @@ class ConfigManager:
                         files.append(
                             str(self.experiment_configuration).format(
                                 coverage_id=c,
-                                final_sample_id=s,
+                                mixture_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
@@ -480,7 +496,7 @@ class ConfigManager:
                         files.append(
                             str(self.merged_tumour_content_file).format(
                                 coverage_id=c,
-                                final_sample_id=s,
+                                mixture_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
@@ -489,7 +505,7 @@ class ConfigManager:
                         files.append(
                             str(self.merged_evidence_file).format(
                                 coverage_id=c,
-                                final_sample_id=s,
+                                mixture_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
@@ -498,7 +514,7 @@ class ConfigManager:
                         files.append(
                             str(self.merged_summary_file).format(
                                 coverage_id=c,
-                                final_sample_id=s,
+                                mixture_id=s,
                                 proportion_id=i,
                                 data_seed_id=r,
                             )
@@ -516,31 +532,24 @@ class ConfigManager:
 
     # HELPERS FOR RULES
 
-    def get_sample(self, final_sample_id: int, bam_id: str) -> str:
+    # def get_sample(self, final_sample_id: int, bam_id: str) -> str:
 
-        if bam_id == "initial":
+    #     if bam_id == "initial":
 
-            return self.initial_sample
+    #         return self.initial_sample
 
-        else:
+    #     else:
 
-            return self.final_samples[final_sample_id]
-
+    #         return self.final_samples[final_sample_id]
+        
     def get_bam_file(self, wildcards: dict) -> str:
-
-        patient = self.patient
-
-        sample = self.get_sample(int(wildcards.final_sample_id), wildcards.bam_id)
-
-        return str(self.bam_file_template).format(patient=patient, sample=sample)
+        return str(self.bam_file_template).format(
+            patient=self.patient, 
+            sample=int(self.mixtures[wildcards.mixture_id][wildcards.bam_id]),
+        )
 
     def get_bai_file(self, wildcards: dict) -> str:
-
-        patient = self.patient
-
-        sample = self.get_sample(int(wildcards.final_sample_id), wildcards.bam_id)
-
-        return str(self.bai_file_template).format(patient=patient, sample=sample)
+        return str(Path(self.get_bam_file(wildcards)).with_suffix('.bam.bai'))
 
     def get_mixed_samples(self, wildcards: dict) -> str:
         return (
@@ -553,30 +562,27 @@ class ConfigManager:
         
         coverage_id = int(wildcards.coverage_id)
         
+        mixture_id = int(wildcards.mixture_id)
+        
         proportion_id = int(wildcards.proportion_id)
         
-        final_sample_id = int(wildcards.final_sample_id)
+        # final_sample_id = int(wildcards.final_sample_id)
         
         data_seed_id = int(wildcards.data_seed_id)
 
         files = []
 
         for b in self.bam_ids:
-
-            if b == "initial":
-
-                p = 1 - self.proportions[proportion_id]
-
-            else:
-
-                p = self.proportions[proportion_id]
+            
+            p = self.proportions[proportion_id] if b == 'final' else 1 - p
 
             if p > 0.:
 
                 files.append(
                     str(self.down_sampled_bam_file_template).format(
                         coverage_id=coverage_id,
-                        final_sample_id=final_sample_id,
+                        # final_sample_id=final_sample_id,
+                        mixture_id=mixture_id,
                         proportion_id=proportion_id,
                         data_seed_id=data_seed_id,
                         bam_id=b,
@@ -656,7 +662,9 @@ class ConfigManager:
 
         for c in self.coverage_ids:
 
-            for s in self.final_sample_ids:
+            # for s in self.final_sample_ids:
+            
+            for s in self.mixture_ids:
 
                 for i in self.proportion_ids:
                     
@@ -664,36 +672,13 @@ class ConfigManager:
 
                         file = str(self.mixed_bam_total_reads_template).format(
                             coverage_id=c,
-                            final_sample_id=s,
+                            # final_sample_id=s,
+                            mixture_id=s,
                             proportion_id=i,
                             data_seed_id=r,
                         )
 
                         files.append(file)
-
-        return files
-
-    @property
-    def gather_cfclone_summary_files(self) -> list[str]:
-
-        files = []
-
-        for c in self.coverage_ids:
-            
-            for s in self.final_sample_ids:
-
-                for i in self.proportion_ids:
-                    
-                    for r in self.data_seed_ids:
-
-                        files.append(
-                            str(self.replicate_summary_template).format(
-                                coverage_id=c, 
-                                final_sample_id=s,
-                                proportion_id=i,
-                                data_seed_id=r,
-                            )
-                        )
 
         return files
 
@@ -706,7 +691,7 @@ class ConfigManager:
             files.append(
                 str(file_template).format(
                     coverage_id=int(wildcards["coverage_id"]),
-                    final_sample_id=int(wildcards['final_sample_id']),
+                    mixture_id=int(wildcards['mixture_id']),
                     proportion_id=int(wildcards["proportion_id"]),
                     data_seed_id=int(wildcards["data_seed_id"]),
                     chrom=c,
@@ -722,51 +707,51 @@ class ConfigManager:
         bam_file_prop = self.compute_bam_proportion(
             bam_id=wildcards.bam_id,
             coverage_id=int(wildcards.coverage_id),
-            final_sample_id=int(wildcards.final_sample_id),
+            mixture_id=int(wildcards.mixture_id),
             proportion_id=int(wildcards.proportion_id),
         )
 
         return format(bam_file_prop, "f")  # store as string for cli
 
     def compute_bam_proportion(
-        self, bam_id: str, coverage_id: int, final_sample_id: int, proportion_id: int
+        self,
+        bam_id: str,
+        coverage_id: int,
+        mixture_id: int,
+        proportion_id: int
     ) -> float:
 
         # LOAD TOTAL NUMBER OF READS IN BAM FILE
 
-        df_num_reads = pd.read_csv(self.get_read_counts_file, sep="\t")
-
-        sample = self.get_sample(final_sample_id, bam_id)
-
-        bam_file = "{}.bam".format(sample)
-
-        num_reads_avail = df_num_reads.loc[
-            df_num_reads["file"] == bam_file, "reads"
-        ].values[0]
+        sample_name = self.mixtures[mixture_id][bam_id]
+        
+        num_reads_avail = (
+            
+            pd.read_csv(self.get_read_counts_file, sep="\t")
+            
+            .loc[lambda df: df["file"] == "{}.bam".format(sample_name), "reads"]
+            
+            .values[0]
+            
+        )
 
         # COMPUTE TOTAL NUMBER OF READS NEEDED FROM BAM FILE
 
         cov = self.coverages[coverage_id]
+        
+        prop = self.proportions[proportion_id]
+        
+        p = prop if bam_id == 'final' else 1 - prop
 
-        if bam_id == "initial":
-
-            prop = 1.0 - self.proportions[proportion_id]
-
-        else:
-
-            prop = self.proportions[proportion_id]
-
-        num_reads_needed = int((self.genome_length / self.read_length) * cov * prop)
+        num_reads_needed = int((self.genome_length / self.read_length) * cov * p)
 
         # CHECK IF THERE ARE ENOUGH READS IN THE BAM FILE
 
         if num_reads_avail < num_reads_needed:
 
-            error_template = "Reads needed is greater than reads avaible: {n} > {a}"
+            msg = "Reads needed is greater than reads avaible: {n} > {a}"
 
-            raise ValueError(
-                error_template.format(n=num_reads_needed, a=num_reads_avail)
-            )
+            raise ValueError(msg.format(n=num_reads_needed, a=num_reads_avail))
 
         # PROPORTION OF BAM FILE WE DOWN SAMPLE TO
 

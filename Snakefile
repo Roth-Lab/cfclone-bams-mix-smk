@@ -15,11 +15,7 @@ onsuccess:
         on="success",
         workflow="cfclone-bams-mix-tf-smk",
         configfile=workflow.configfiles[0],
-        imgs=[
-            config.copied_config,
-            config.plot_summary_file,
-            config.plot_summary_file_w_cohort,
-        ],
+        imgs=[config.copied_config],
     )
 
 onerror:
