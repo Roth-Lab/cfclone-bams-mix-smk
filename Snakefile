@@ -64,9 +64,10 @@ rule down_sample_bam_file:
         config.compute_down_sample_proportion
     shell:
         """
-        samtools view -b -s {params} {input.bam} -o {output.bam} 1> {log} 2>&1
+        samtools view -b --subsample.seed {} --subsample {params} {input.bam} -o {output.bam} 1> {log} 2>&1
         samtools index {output.bam} 1>> {log} 2>&1
         """
+        # samtools view -b -s {params} {input.bam} -o {output.bam} 1> {log} 2>&1
         # samtools view --write-index -b -s {params.fraction} {input.bam} -o {output.bam}##idx##{output.bai} 1> {log} 2>&1 # returns error "Random alignment retrieval only works for index ...""
 
 
