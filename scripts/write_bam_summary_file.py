@@ -39,6 +39,8 @@ def main(args):
     
     df.insert(8, 'proportion', args.proportion)
     
+    df.insert(9, 'data_seed', args.data_seed)
+    
     df.to_csv(args.out_file, sep='\t', index=False)
     
 
@@ -67,6 +69,8 @@ if __name__ == "__main__":
     parser.add_argument("--proportion", type=float, required=True)
     
     parser.add_argument("--proportion-id", type=int, required=True)
+    
+    parser.add_argument("--data-seed", type=int, required=True)
     
     parser.add_argument("--bam-id", type=str, required=True)
 

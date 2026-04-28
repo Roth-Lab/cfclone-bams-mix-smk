@@ -40,10 +40,22 @@ class ConfigManager:
     @property
     def coverage_ids(self) -> list[int]:
         return list(range(len(self.coverages)))
+    
+    @property
+    def num_data_replicates(self) -> int:
+        return self.config['num_data_replicates']
+    
+    @property
+    def data_seed_ids(self) -> list[int]:
+        return list(range(self.num_data_replicates))
 
     @property
     def bam_ids(self) -> list[str]:
         return ["initial", "final"]
+    
+    @property
+    def num_model_replicates(self) -> int:
+        return self.config['num_model_replicates']
 
     # DATA SETTINGS
 
@@ -155,13 +167,17 @@ class ConfigManager:
         chroms = [str(x) for x in chroms]
 
         if "autosomes" in self.config["chromosomes"]:
+            
             chroms.remove("autosomes")
+            
             chroms = [str(x) for x in range(1, 23)] + chroms
 
         for c in chroms:
+            
             assert c in [str(x) for x in range(1, 23)] + ["X"]
 
         if self.add_chr_prefix:
+            
             chroms = ["chr{}".format(x) for x in chroms]
 
         return chroms
@@ -218,7 +234,18 @@ class ConfigManager:
             "coverage_{coverage_id}",
             "final_sample_{final_sample_id}",
             "proportion_{proportion_id}",
+            "data_seed_{data_seed_id}",
             "{bam_id}.bam",
+        )
+
+    @property
+    def mixed_bam_file_template(self) -> Path:
+        return self.out_dir.joinpath(
+            "coverage_{coverage_id}",
+            "final_sample_{final_sample_id}",
+            "proportion_{proportion_id}",
+            "data_seed_{data_seed_id}",
+            "mixed.bam",
         )
 
     @property
@@ -228,15 +255,6 @@ class ConfigManager:
     @property
     def down_sampled_total_reads_template(self) -> Path:
         return self.down_sampled_bam_file_template.with_suffix(".tsv")
-
-    @property
-    def mixed_bam_file_template(self) -> Path:
-        return self.out_dir.joinpath(
-            "coverage_{coverage_id}",
-            "final_sample_{final_sample_id}",
-            "proportion_{proportion_id}",
-            "mixed.bam",
-        )
 
     @property
     def mixed_bai_file_template(self) -> Path:
@@ -267,6 +285,7 @@ class ConfigManager:
             "coverage_{coverage_id}",
             "final_sample_{final_sample_id}",
             "proportion_{proportion_id}",
+            "data_seed_{data_seed_id}",
         )
 
     @property
@@ -338,6 +357,7 @@ class ConfigManager:
             "coverage_{coverage_id}",
             "final_sample_{final_sample_id}",
             "proportion_{proportion_id}",
+            "data_seed_{data_seed_id}",
             "data.tsv.gz",
         )
 
@@ -349,6 +369,7 @@ class ConfigManager:
             "coverage_{coverage_id}",
             "final_sample_{final_sample_id}",
             "proportion_{proportion_id}",
+            "data_seed_{data_seed_id}",
         )
 
     @property
@@ -426,13 +447,15 @@ class ConfigManager:
 
                 for i in self.proportion_ids:
                     
-                    files.append(
-                        str(self.rdr_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i)
-                    )
+                    for r in self.data_seed_ids:
+                    
+                        files.append(
+                            str(self.rdr_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
+                        )
 
-                    files.append(
-                        str(self.baf_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i)
-                    )
+                        files.append(
+                            str(self.baf_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
+                        )
 
         return files
 
@@ -478,6 +501,8 @@ class ConfigManager:
         proportion_id = int(wildcards.proportion_id)
         
         final_sample_id = int(wildcards.final_sample_id)
+        
+        data_seed_id = int(wildcards.data_seed_id)
 
         files = []
 
@@ -498,6 +523,7 @@ class ConfigManager:
                         coverage_id=coverage_id,
                         final_sample_id=final_sample_id,
                         proportion_id=proportion_id,
+                        data_seed_id=data_seed_id,
                         bam_id=b,
                     )
                 )
@@ -512,22 +538,27 @@ class ConfigManager:
         for c in self.coverage_ids:
 
             for p in self.proportion_ids:
+                
+                for r in self.data_seed_ids:
 
-                for b in self.bam_ids:
+                    for b in self.bam_ids:
 
-                    p = self.compute_bam_proportion(
-                        bam_id=b,
-                        coverage_id=c,
-                        proportion_id=p,
-                    )
-
-                    if p > 0.0:
-
-                        files.append(
-                            str(self.down_sampled_total_reads_template).format(
-                                coverage_id=c, proportion_id=p, bam_id=b
-                            )
+                        p = self.compute_bam_proportion(
+                            bam_id=b,
+                            coverage_id=c,
+                            proportion_id=p,
                         )
+
+                        if p > 0.0:
+
+                            files.append(
+                                str(self.down_sampled_total_reads_template).format(
+                                    coverage_id=c, 
+                                    proportion_id=p,
+                                    data_seed_id=r,
+                                    bam_id=b,
+                                )
+                            )
 
         return files
 
@@ -537,38 +568,23 @@ class ConfigManager:
 
     @property
     def get_control_bam_file(self) -> str:
-
-        patient = self.patient
-
-        return str(self.control_bam_file_template).format(patient=patient)
+        return str(self.control_bam_file_template).format(patient=self.patient)
 
     @property
     def get_control_bai_file(self) -> str:
-
-        patient = self.patient
-
-        return str(self.control_bai_file_template).format(patient=patient)
+        return str(self.control_bai_file_template).format(patient=self.patient)
 
     @property
     def get_snp_file(self) -> str:
-
-        patient = self.patient
-
-        return str(self.snp_file_template).format(patient=patient)
+        return str(self.snp_file_template).format(patient=self.patient)
 
     @property
     def get_hapclone_results_file(self) -> str:
-
-        patient = self.patient
-
-        return str(self.hapclone_results_file_template).format(patient=patient)
+        return str(self.hapclone_results_file_template).format(patient=self.patient)
 
     @property
     def get_clone_filter_file(self) -> str:
-
-        patient = self.patient
-
-        return str(self.clone_filter_file_template).format(patient=patient)
+        return str(self.clone_filter_file_template).format(patient=self.patient)
 
     # HELPERS FOR PREPROC RULES
 
@@ -588,14 +604,17 @@ class ConfigManager:
             for s in self.final_sample_ids:
 
                 for i in self.proportion_ids:
+                    
+                    for r in self.data_seed_ids:
 
-                    file = str(self.mixed_bam_total_reads_template).format(
-                        coverage_id=c,
-                        final_sample_id=s,
-                        proportion_id=i,
-                    )
+                        file = str(self.mixed_bam_total_reads_template).format(
+                            coverage_id=c,
+                            final_sample_id=s,
+                            proportion_id=i,
+                            data_seed_id=r,
+                        )
 
-                    files.append(file)
+                        files.append(file)
 
         return files
 
@@ -609,14 +628,17 @@ class ConfigManager:
             for s in self.final_sample_ids:
 
                 for i in self.proportion_ids:
+                    
+                    for r in self.data_seed_ids:
 
-                    files.append(
-                        str(self.replicate_summary_template).format(
-                            coverage_id=c, 
-                            final_sample_id=s,
-                            proportion_id=i
+                        files.append(
+                            str(self.replicate_summary_template).format(
+                                coverage_id=c, 
+                                final_sample_id=s,
+                                proportion_id=i,
+                                data_seed_id=r,
+                            )
                         )
-                    )
 
         return files
 
@@ -631,6 +653,7 @@ class ConfigManager:
                     coverage_id=int(wildcards["coverage_id"]),
                     final_sample_id=int(wildcards['final_sample_id']),
                     proportion_id=int(wildcards["proportion_id"]),
+                    data_seed_id=int(wildcards["data_seed_id"]),
                     chrom=c,
                 )
             )
