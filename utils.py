@@ -469,7 +469,7 @@ class ConfigManager:
 
         files.append(self.mixed_bams_summary_file)
 
-        files.append(self.summary_file)
+        # files.append(self.summary_file)
 
         # files.append(self.plot_summary_file)
 
