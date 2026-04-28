@@ -187,18 +187,20 @@ class ConfigManager:
     @property
     def cfclone_config(self):
         return {
-            "clone_cn_file": str(self.cfclone_clone_cn_template),
             "ctdna_file": str(self.cfclone_ctdna_template),
+            "clone_cn_file": str(self.cfclone_clone_cn_template),
+            "clone_tree_newick": str(None),  # cfclone-smk needs o.w. schema validation
             "num_chains": self.num_chains,
             "num_rounds": self.num_rounds,
             "num_threads": self.num_threads,
-            "run_single_clone_model": False,
-            "clone_tree_newick": str(None),  # cfclone-smk needs o.w. schema validation
+            "num_restarts": self.num_model_replicates,
+            "out_dir": "<out_dir>",
+            "pipeline_dir": "<pipeline_dir>",
         }
 
     @property
     def num_chains(self):
-        return self.config.get("num_chains", 5)
+        return self.config.get("num_chains", 16)
 
     @property
     def num_rounds(self):
@@ -360,45 +362,62 @@ class ConfigManager:
             "data_seed_{data_seed_id}",
             "data.tsv.gz",
         )
-
-    # CFCLONE OUTPUTS
+    
+    # CFCLONE-SMK: INPUTS AND OUTPUTS
 
     @property
-    def replicate_dir(self):
-        return self.pipeline_dir.joinpath(
+    def cfclone_out_dir(self):
+        return self.out_dir.joinpath(
             "coverage_{coverage_id}",
             "final_sample_{final_sample_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
+            "out_dir",
         )
 
     @property
-    def replicate_out_dir(self):
-        return self.replicate_dir.joinpath("results")
+    def cfclone_pipeline_dir(self):
+        return self.out_dir.joinpath(
+            "coverage_{coverage_id}",
+            "final_sample_{final_sample_id}",
+            "proportion_{proportion_id}",
+            "data_seed_{data_seed_id}",
+            "pipeline_dir",
+        )
 
     @property
-    def replicate_pipeline_dir(self):
-        return self.replicate_dir.joinpath("tmp")
+    def cfclone_clone_cn_template(self):
+        return self.out_dir.joinpath(
+            "input", "clone_cn", "clone_cn.tsv.gz"
+        )
 
     @property
-    def replicate_fit_template(self):
-        return self.replicate_out_dir.joinpath("fit", "full.h5")
+    def cfclone_ctdna_template(self):
+        return self.out_dir.joinpath(
+            "input",
+            "ctdna",
+            "coverage_{coverage_id}",
+            "final_sample_{final_sample_id}",
+            "proportion_{proportion_id}",
+            "data_seed_{data_seed_id}",
+            "data.tsv.gz",
+        )
 
     @property
-    def replicate_exec_dir(self):
-        return self.replicate_out_dir.joinpath("fit", "full")
+    def experiment_configuration(self):
+        return self.cfclone_out_dir.joinpath("config.yaml")
 
     @property
-    def replicate_evidence_template(self):
-        return self.replicate_out_dir.joinpath("tables", "evidence.tsv")
+    def merged_tumour_content_file(self):
+        return self.cfclone_out_dir.joinpath("tumour_content.tsv")
 
     @property
-    def replicate_tumour_content_template(self):
-        return self.replicate_out_dir.joinpath("tables", "tumour_content.tsv")
+    def merged_evidence_file(self):
+        return self.cfclone_out_dir.joinpath("evidence.tsv")
 
     @property
-    def replicate_summary_template(self):
-        return self.replicate_out_dir.joinpath("summary.tsv")
+    def merged_summary_file(self):
+        return self.cfclone_out_dir.joinpath("summary.tsv")
 
     # SUMMARY OUTPUTS
 
@@ -418,13 +437,13 @@ class ConfigManager:
     def mixed_bams_summary_file(self) -> Path:
         return self.outputs.joinpath("mixed_bams_summary.tsv")
 
-    @property
-    def plot_summary_file(self) -> Path:
-        return self.outputs.joinpath("tfs.png")
+    # @property
+    # def plot_summary_file(self) -> Path:
+    #     return self.outputs.joinpath("tfs.png")
 
-    @property
-    def plot_summary_file_w_cohort(self) -> Path:
-        return self.outputs.joinpath("tfs_w_cohort.png")
+    # @property
+    # def plot_summary_file_w_cohort(self) -> Path:
+    #     return self.outputs.joinpath("tfs_w_cohort.png")
 
     @property
     def pipeline_files(self) -> list[str]:
@@ -437,9 +456,9 @@ class ConfigManager:
 
         files.append(self.summary_file)
 
-        files.append(self.plot_summary_file)
+        # files.append(self.plot_summary_file)
 
-        files.append(self.plot_summary_file_w_cohort)
+        # files.append(self.plot_summary_file_w_cohort)
 
         for c in self.coverage_ids:
             
@@ -448,14 +467,50 @@ class ConfigManager:
                 for i in self.proportion_ids:
                     
                     for r in self.data_seed_ids:
-                    
+                        
                         files.append(
-                            str(self.rdr_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
+                            str(self.experiment_configuration).format(
+                                coverage_id=c,
+                                final_sample_ids=s,
+                                proportion_id=i,
+                                data_seed_id=r,
+                            )
                         )
 
                         files.append(
-                            str(self.baf_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
+                            str(self.merged_tumour_content_file).format(
+                                coverage_id=c,
+                                final_sample_ids=s,
+                                proportion_id=i,
+                                data_seed_id=r,
+                            )
                         )
+
+                        files.append(
+                            str(self.merged_evidence_file).format(
+                                coverage_id=c,
+                                final_sample_ids=s,
+                                proportion_id=i,
+                                data_seed_id=r,
+                            )
+                        )
+
+                        files.append(
+                            str(self.merged_summary_file).format(
+                                coverage_id=c,
+                                final_sample_ids=s,
+                                proportion_id=i,
+                                data_seed_id=r,
+                            )
+                        )
+
+                        # files.append(
+                        #     str(self.rdr_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
+                        # )
+
+                        # files.append(
+                        #     str(self.baf_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
+                        # )
 
         return files
 

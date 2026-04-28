@@ -30,8 +30,10 @@ onerror:
     )
 
 pathvars:
-    out_dir=str(config.replicate_out_dir),
-    pipeline_dir=str(config.replicate_pipeline_dir),
+    # out_dir=str(config.replicate_out_dir),
+    # pipeline_dir=str(config.replicate_pipeline_dir),
+    out_dir=str(config.cfclone_out_dir),
+    pipeline_dir=str(config.cfclone_pipeline_dir),
 
 
 ruleorder: down_sample_bam_file > merge_down_sampled_bam_files > write_mixed_bam_summary_file
@@ -451,7 +453,8 @@ rule build_cfclone_ctdna_file:
 
 module cfclone:
     snakefile:
-        "../cfclone-smk/Snakefile"
+        # "../cfclone-smk/Snakefile"
+        "../tmp-cfclone-smk/cfclone-smk/Snakefile"
     config:
         config.cfclone_config
 
@@ -462,73 +465,89 @@ use rule * from cfclone as cfclone_*
 use rule run_cfclone from cfclone as cfclone_run_cfclone with:
     input:
         c=config.cfclone_clone_cn_template,
-        i=config.cfclone_ctdna_template
+        i=config.cfclone_ctdna_template,
 
 
-rule build_replicate_summary:
-    input:
-        e=config.replicate_evidence_template,
-        t=config.replicate_tumour_content_template,
-    output:
-        config.replicate_summary_template
-    params:
-        p=config.patient,
-        s_init=config.initial_sample,
-        s_final=lambda widlcards: config.final_samples[int(widlcards.final_sample_id)],
-        c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
-        i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
-    conda:
-        "envs/python.yaml"
-    log:
-        config.get_log_file(config.replicate_summary_template)
-    shell:
-        "(python scripts/write_summary_file.py "
-        "-e {input.e} "
-        "-t {input.t} "
-        "-o {output} "
-        "--patient {params.p} "
-        "--initial-sample {params.s_init} "
-        "--final-sample {params.s_final} "
-        "--coverage {params.c} "
-        "--proportion {params.i}) >{log} 2>&1"
+# module cfclone:
+#     snakefile:
+#         "../cfclone-smk/Snakefile"
+#     config:
+#         config.cfclone_config
 
 
-rule merge_summaries:
-    input:
-        config.gather_cfclone_summary_files
-    output:
-        config.summary_file
-    conda:
-        "envs/python.yaml"
-    log:
-        config.get_log_file(config.summary_file),
-    shell:
-        "(python scripts/merge_tables.py -i {input} -o {output}) >{log} 2>&1"
+# use rule * from cfclone as cfclone_*
 
 
-rule plot_summaries:
-    input:
-        config.summary_file,
-    output:
-        config.plot_summary_file,
-    conda:
-        "envs/python.yaml"
-    log:
-        config.get_log_file(config.plot_summary_file)
-    shell:
-        "(python scripts/plot_tf.py -i {input} -o {output} --cohort-tc-summary-file 'None') >{log} 2>&1"
+# use rule run_cfclone from cfclone as cfclone_run_cfclone with:
+#     input:
+#         c=config.cfclone_clone_cn_template,
+#         i=config.cfclone_ctdna_template
 
 
-rule plot_summaries_w_cohort:
-    input:
-        config.summary_file,
-    output:
-        config.plot_summary_file_w_cohort,
-    conda:
-        "envs/python.yaml"
-    log:
-        config.get_log_file(config.plot_summary_file_w_cohort)
-    params:
-        config.cohort_tc_summary_file
-    shell:
-        "(python scripts/plot_tf.py -i {input} -o {output} --cohort-tc-summary-file {params}) >{log} 2>&1"
+# rule build_replicate_summary:
+#     input:
+#         e=config.replicate_evidence_template,
+#         t=config.replicate_tumour_content_template,
+#     output:
+#         config.replicate_summary_template
+#     params:
+#         p=config.patient,
+#         s_init=config.initial_sample,
+#         s_final=lambda widlcards: config.final_samples[int(widlcards.final_sample_id)],
+#         c=lambda wildcards: config.coverages[int(wildcards.coverage_id)],
+#         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
+#     conda:
+#         "envs/python.yaml"
+#     log:
+#         config.get_log_file(config.replicate_summary_template)
+#     shell:
+#         "(python scripts/write_summary_file.py "
+#         "-e {input.e} "
+#         "-t {input.t} "
+#         "-o {output} "
+#         "--patient {params.p} "
+#         "--initial-sample {params.s_init} "
+#         "--final-sample {params.s_final} "
+#         "--coverage {params.c} "
+#         "--proportion {params.i}) >{log} 2>&1"
+
+
+# rule merge_summaries:
+#     input:
+#         config.gather_cfclone_summary_files
+#     output:
+#         config.summary_file
+#     conda:
+#         "envs/python.yaml"
+#     log:
+#         config.get_log_file(config.summary_file),
+#     shell:
+#         "(python scripts/merge_tables.py -i {input} -o {output}) >{log} 2>&1"
+
+
+# rule plot_summaries:
+#     input:
+#         config.summary_file,
+#     output:
+#         config.plot_summary_file,
+#     conda:
+#         "envs/python.yaml"
+#     log:
+#         config.get_log_file(config.plot_summary_file)
+#     shell:
+#         "(python scripts/plot_tf.py -i {input} -o {output} --cohort-tc-summary-file 'None') >{log} 2>&1"
+
+
+# rule plot_summaries_w_cohort:
+#     input:
+#         config.summary_file,
+#     output:
+#         config.plot_summary_file_w_cohort,
+#     conda:
+#         "envs/python.yaml"
+#     log:
+#         config.get_log_file(config.plot_summary_file_w_cohort)
+#     params:
+#         config.cohort_tc_summary_file
+#     shell:
+#         "(python scripts/plot_tf.py -i {input} -o {output} --cohort-tc-summary-file {params}) >{log} 2>&1"
