@@ -8,10 +8,12 @@ printshellcmds: True
 report: 'report.html'
 report-after-run: True
 
-
 latency-wait: 60
+
 rerun-incomplete: True
-retries: 1
+
+retries: 10
+
 local-cores: 1
 
 executor: slurm
@@ -26,5 +28,8 @@ set-resources:
     mem_mb: min((1000 * threads) * attempt, 180000)
     runtime: f"{1440 * attempt}m"
   merge_bam_files:
+    mem_mb: min((1000 * threads) * attempt, 180000)
+    runtime: f"{1440 * attempt}m"
+  cfclone_run_cfclone:
     mem_mb: min((1000 * threads) * attempt, 180000)
     runtime: f"{1440 * attempt}m"
