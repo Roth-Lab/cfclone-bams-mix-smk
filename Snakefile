@@ -45,7 +45,7 @@ rule build_config_file:
 
 # DOWN SAMPLE BAM FILES 
 
-rule down_sample_bam_file:
+rule downsample_bam_file:
     input:
         bam=config.get_bam_file,
         bai=config.get_bai_file,
@@ -72,7 +72,7 @@ rule down_sample_bam_file:
         # samtools view --write-index -b -s {params.fraction} {input.bam} -o {output.bam}##idx##{output.bai} 1> {log} 2>&1 # returns error "Random alignment retrieval only works for index ...""
 
 
-rule merge_down_sampled_bam_files:
+rule merge_bam_files:
     input:
         config.get_bams_to_mix
     output:
