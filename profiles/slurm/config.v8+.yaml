@@ -11,9 +11,13 @@ report-after-run: True
 latency-wait: 60
 
 rerun-incomplete: True
+<<<<<<< Updated upstream
 
 retries: 10
 
+=======
+retries: 10
+>>>>>>> Stashed changes
 local-cores: 1
 
 executor: slurm
@@ -30,6 +34,9 @@ set-resources:
   merge_bam_files:
     mem_mb: min((1000 * threads) * attempt, 180000)
     runtime: f"{1440 * attempt}m"
+<<<<<<< Updated upstream
   cfclone_run_cfclone:
     mem_mb: min((1000 * threads) * attempt, 180000)
     runtime: f"{1440 * attempt}m"
+=======
+>>>>>>> Stashed changes

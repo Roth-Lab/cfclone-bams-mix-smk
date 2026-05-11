@@ -32,7 +32,7 @@ pathvars:
     pipeline_dir=str(config.cfclone_pipeline_dir),
 
 
-ruleorder: down_sample_bam_file > merge_down_sampled_bam_files > write_mixed_bam_summary_file
+ruleorder: downsample_bam_file > merge_bam_files > write_mixed_bam_summary_file
 
 rule build_config_file:
     input:
