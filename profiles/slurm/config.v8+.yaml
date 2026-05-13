@@ -1,4 +1,5 @@
 jobs: unlimited
+cores: 450
 
 software-deployment-method: conda
 use-conda: True
