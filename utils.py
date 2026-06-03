@@ -769,6 +769,10 @@ class ConfigManager:
         # PROPORTION OF BAM FILE WE DOWN SAMPLE TO
 
         bam_file_prop = num_reads_needed / num_reads_avail
+        
+        if bam_file_prop > 1.:
+            
+            raise ValueError("Proportion of bam file to down sample to greater than 1: {}".format(bam_file_prop))
 
         return bam_file_prop
 
