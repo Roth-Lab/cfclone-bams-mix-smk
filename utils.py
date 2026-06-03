@@ -530,14 +530,24 @@ class ConfigManager:
                                 data_seed_id=r,
                             )
                         )
+                        
+                        files.append(
+                            str(self.rdr_plot_template).format(
+                                coverage_id=c,
+                                mixture_id=s,
+                                proportion_id=i,
+                                data_seed_id=r,
+                            )
+                        )
 
-                        # files.append(
-                        #     str(self.rdr_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
-                        # )
-
-                        # files.append(
-                        #     str(self.baf_plot_template).format(coverage_id=c, final_sample_id = s, proportion_id=i, data_seed_id=r)
-                        # )
+                        files.append(
+                            str(self.baf_plot_template).format(
+                                coverage_id=c,
+                                mixture_id=s,
+                                proportion_id=i,
+                                data_seed_id=r,
+                            )
+                        )
 
         return files
 
