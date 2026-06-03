@@ -13,7 +13,9 @@ def main(args):
         
         obs_cov = (args.read_length * num_reads) / args.genome_length
     
-    except:
+    except Exception as e:
+        
+        print("Didn't calculate coverage due to error: {}".format(e))
         
         num_reads = 'Nan'
         
