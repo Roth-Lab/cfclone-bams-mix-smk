@@ -72,6 +72,10 @@ if __name__ == "__main__":
     
     parser.add_argument("--proportion", type=float, required=True)
     
+    parser.add_argument("--read-length", type=int, required=True)
+    
+    parser.add_argument("--genome-length", type=int, required=True)
+    
     cli_args = parser.parse_args()
     
     main(cli_args)

@@ -107,6 +107,8 @@ rule write_mixed_bam_summary_file:
         s=config.get_mixed_samples, 
         i=lambda wildcards: config.proportions[int(wildcards.proportion_id)],
         d=lambda wildcards: int(wildcards.data_seed_id),
+        r=config.read_length,
+        g=config.genome_length
     shell:
         "(python scripts/write_bam_summary_file.py "
         "-i {input.bam} "
@@ -119,7 +121,9 @@ rule write_mixed_bam_summary_file:
         "--bam-id 'mixed' "
         "--coverage {params.c} "
         "--mixture {params.s} "
-        "--proportion {params.i} ) >{log} 2>&1"
+        "--proportion {params.i} "
+        "--read-length {params.r} "
+        "--genome-length {params.g} ) >{log} 2>&1"
 
 rule merge_mixed_bams_summary_files:
     input:
