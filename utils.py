@@ -364,11 +364,11 @@ class ConfigManager:
     def rdr_plot_template(self):
         return self.working_dir.joinpath("plots", "rdr", "rdr.png")
 
-    # CFCLONE INPUT DATA
-
+    # CFCLONE-SMK: INPUTS 
+    
     @property
     def cfclone_input_dir(self):
-        return self.out_dir.joinpath("input")
+        return self.out_dir.joinpath('cfclone', 'input')
 
     @property
     def cfclone_clone_cn_template(self):
@@ -379,55 +379,32 @@ class ConfigManager:
         return self.cfclone_input_dir.joinpath(
             "ctdna",
             "coverage_{coverage_id}",
-            # "final_sample_{final_sample_id}",
             "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
             "data.tsv.gz",
         )
+        
+ 
+    # CFCLONE-SMK: OUTPUTS
     
-    # CFCLONE-SMK: INPUTS AND OUTPUTS
-
     @property
-    def cfclone_out_dir(self):
+    def cfclone_dir(self):
         return self.out_dir.joinpath(
+            "cfclone",
             "coverage_{coverage_id}",
-            # "final_sample_{final_sample_id}",
             "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
-            "out_dir",
         )
+        
+    @property
+    def cfclone_out_dir(self):
+        return self.cfclone_dir.joinpath("out_dir")
 
     @property
     def cfclone_pipeline_dir(self):
-        return self.out_dir.joinpath(
-            "coverage_{coverage_id}",
-            # "final_sample_{final_sample_id}",
-            "mixture_{mixture_id}",
-            "proportion_{proportion_id}",
-            "data_seed_{data_seed_id}",
-            "pipeline_dir",
-        )
-
-    @property
-    def cfclone_clone_cn_template(self):
-        return self.out_dir.joinpath(
-            "input", "clone_cn", "clone_cn.tsv.gz"
-        )
-
-    @property
-    def cfclone_ctdna_template(self):
-        return self.out_dir.joinpath(
-            "input",
-            "ctdna",
-            "coverage_{coverage_id}",
-            # "final_sample_{final_sample_id}",
-            "mixture_{mixture_id}",
-            "proportion_{proportion_id}",
-            "data_seed_{data_seed_id}",
-            "data.tsv.gz",
-        )
+        return self.cfclone_dir.joinpath("pipeline_dir")
 
     @property
     def experiment_configuration(self):
@@ -444,6 +421,7 @@ class ConfigManager:
     @property
     def merged_summary_file(self):
         return self.cfclone_out_dir.joinpath("summary.tsv")
+
 
     # SUMMARY OUTPUTS
 
