@@ -441,14 +441,6 @@ class ConfigManager:
     def mixed_bams_summary_file(self) -> Path:
         return self.outputs.joinpath("mixed_bams_summary.tsv")
 
-    # @property
-    # def plot_summary_file(self) -> Path:
-    #     return self.outputs.joinpath("tfs.png")
-
-    # @property
-    # def plot_summary_file_w_cohort(self) -> Path:
-    #     return self.outputs.joinpath("tfs_w_cohort.png")
-
     @property
     def pipeline_files(self) -> list[str]:
 
@@ -458,15 +450,8 @@ class ConfigManager:
 
         files.append(self.mixed_bams_summary_file)
 
-        # files.append(self.summary_file)
-
-        # files.append(self.plot_summary_file)
-
-        # files.append(self.plot_summary_file_w_cohort)
-
         for c in self.coverage_ids:
             
-            # for s in self.final_sample_ids:
             for s in self.mixture_ids:
 
                 for i in self.proportion_ids:
@@ -530,16 +515,6 @@ class ConfigManager:
         return files
 
     # HELPERS FOR RULES
-
-    # def get_sample(self, final_sample_id: int, bam_id: str) -> str:
-
-    #     if bam_id == "initial":
-
-    #         return self.initial_sample
-
-    #     else:
-
-    #         return self.final_samples[final_sample_id]
         
     def get_bam_file(self, wildcards: dict) -> str:
         return str(self.bam_file_template).format(
@@ -565,8 +540,6 @@ class ConfigManager:
         
         proportion_id = int(wildcards.proportion_id)
         
-        # final_sample_id = int(wildcards.final_sample_id)
-        
         data_seed_id = int(wildcards.data_seed_id)
 
         files = []
@@ -582,7 +555,6 @@ class ConfigManager:
                 files.append(
                     str(self.down_sampled_bam_file_template).format(
                         coverage_id=coverage_id,
-                        # final_sample_id=final_sample_id,
                         mixture_id=mixture_id,
                         proportion_id=proportion_id,
                         data_seed_id=data_seed_id,
@@ -592,37 +564,37 @@ class ConfigManager:
 
         return files
 
-    @property
-    def gather_down_sampled_summary_files(self) -> list[str]:
+    # @property
+    # def gather_down_sampled_summary_files(self) -> list[str]:
 
-        files = []
+    #     files = []
 
-        for c in self.coverage_ids:
+    #     for c in self.coverage_ids:
 
-            for p in self.proportion_ids:
+    #         for p in self.proportion_ids:
                 
-                for r in self.data_seed_ids:
+    #             for r in self.data_seed_ids:
 
-                    for b in self.bam_ids:
+    #                 for b in self.bam_ids:
 
-                        p = self.compute_bam_proportion(
-                            bam_id=b,
-                            coverage_id=c,
-                            proportion_id=p,
-                        )
+    #                     p = self.compute_bam_proportion(
+    #                         bam_id=b,
+    #                         coverage_id=c,
+    #                         proportion_id=p,
+    #                     )
 
-                        if p > 0.0:
+    #                     if p > 0.0:
 
-                            files.append(
-                                str(self.down_sampled_total_reads_template).format(
-                                    coverage_id=c, 
-                                    proportion_id=p,
-                                    data_seed_id=r,
-                                    bam_id=b,
-                                )
-                            )
+    #                         files.append(
+    #                             str(self.down_sampled_total_reads_template).format(
+    #                                 coverage_id=c, 
+    #                                 proportion_id=p,
+    #                                 data_seed_id=r,
+    #                                 bam_id=b,
+    #                             )
+    #                         )
 
-        return files
+    #     return files
 
     @property
     def get_read_counts_file(self) -> str:
@@ -663,8 +635,6 @@ class ConfigManager:
 
         for c in self.coverage_ids:
 
-            # for s in self.final_sample_ids:
-            
             for s in self.mixture_ids:
 
                 for i in self.proportion_ids:
@@ -673,7 +643,6 @@ class ConfigManager:
 
                         file = str(self.mixed_bam_total_reads_template).format(
                             coverage_id=c,
-                            # final_sample_id=s,
                             mixture_id=s,
                             proportion_id=i,
                             data_seed_id=r,
