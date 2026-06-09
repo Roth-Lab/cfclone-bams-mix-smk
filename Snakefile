@@ -448,7 +448,7 @@ rule build_cfclone_ctdna_file:
 module cfclone:
     snakefile:
         # "../cfclone-smk/Snakefile"
-        "../tmp-cfclone-smk/cfclone-smk/Snakefile"
+        "../cfclone-smk/Snakefile"
     config:
         config.cfclone_config
 
