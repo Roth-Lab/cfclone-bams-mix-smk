@@ -6,10 +6,6 @@ from utils import ConfigManager
 
 config = ConfigManager(config)
 
-rule all:
-    input:
-        config.pipeline_files
-
 onsuccess:
     config.email_notification(
         on="success",
@@ -31,6 +27,10 @@ pathvars:
 
 
 ruleorder: downsample_bam_file > merge_bam_files > write_mixed_bam_summary_file
+
+rule all:
+    input:
+        config.pipeline_files
 
 rule build_config_file:
     input:
