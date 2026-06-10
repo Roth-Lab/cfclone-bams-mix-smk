@@ -149,19 +149,19 @@ class ConfigManager:
 
     @property
     def bin_size(self):
-        return self.config.get("bin_size", "500kb")
+        return self.config["bin_size"]
 
     @property
     def add_chr_prefix(self):
-        return self.config.get("add_chr_prefix", True)
+        return self.config["add_chr_prefix"]
 
     @property
     def min_bqual(self):
-        return int(self.config.get("min_bqual", 30))
+        return self.config["min_bqual"]
 
     @property
     def min_mqual(self):
-        return int(self.config.get("min_mqual", 30))
+        return self.config["min_mqual"]
 
     @property
     def chromosomes(self):
@@ -204,15 +204,15 @@ class ConfigManager:
 
     @property
     def num_chains(self):
-        return self.config.get("num_chains", 16)
+        return self.config["num_chains"]
 
     @property
     def num_rounds(self):
-        return self.config.get("num_rounds", 10)
+        return self.config["num_rounds"]
 
     @property
     def num_threads(self):
-        return self.config.get("num_threads", 1)
+        return self.config["num_threads"]
 
     @property
     def cfclone_use_outlier(self):
@@ -238,7 +238,6 @@ class ConfigManager:
     def down_sampled_bam_file_template(self) -> Path:
         return self.pipeline_dir.joinpath(
             "coverage_{coverage_id}",
-            # "final_sample_{final_sample_id}",
             "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
@@ -249,7 +248,6 @@ class ConfigManager:
     def mixed_bam_file_template(self) -> Path:
         return self.out_dir.joinpath(
             "coverage_{coverage_id}",
-            # "final_sample_{final_sample_id}",
             "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
@@ -291,7 +289,6 @@ class ConfigManager:
         return self.pipeline_dir.joinpath(
             "working",
             "coverage_{coverage_id}",
-            # "final_sample_{final_sample_id}",
             "mixture_{mixture_id}",
             "proportion_{proportion_id}",
             "data_seed_{data_seed_id}",
