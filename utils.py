@@ -598,7 +598,6 @@ class ConfigManager:
 
     # HELPERS TO GATHERS FILES
 
-    @property
     def gather_files(self, file_template: str) -> list[str]:
 
         files = []
