@@ -65,7 +65,7 @@ rule downsample_bam_file:
         seed=lambda wildcards: int(wildcards.data_seed_id)
     shell:
         """
-        samtools view -b --subsample-seed {params.seed} --subsample {params.prop} {input.bam} -o {output.bam} 1> {log} 2>&1
+        samtools view -b -f 0x2 --subsample-seed {params.seed} --subsample {params.prop} {input.bam} -o {output.bam} 1> {log} 2>&1
         samtools index {output.bam} 1>> {log} 2>&1
         """
         # samtools view -b -s {params} {input.bam} -o {output.bam} 1> {log} 2>&1
