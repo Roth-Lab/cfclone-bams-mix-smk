@@ -78,7 +78,6 @@ properties:
     description: patient id from which bams were mixed
   mixtures:
     type: object
-    minProperties: 1
     description: Dictionary mapping mixture ids to their initial and final samples to mix
     additionalProperties:
       type: object
