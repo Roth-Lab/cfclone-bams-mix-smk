@@ -141,7 +141,7 @@ required: [
   "read_counts_file_template",
   "snp_file_template",
   "clone_filter_file_template",
-  "hapclone_results_file",
+  "hapclone_results_file_template",
   "black_list_file",
   "centromere_file",
   "map_file",
