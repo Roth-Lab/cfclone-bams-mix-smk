@@ -30,23 +30,8 @@ class ConfigManager:
         return list(self.mixtures.keys())
 
     @property
-    def increment(self) -> float | list[float]:
-        return self.config["increment"]
-
-    @property
     def proportions(self) -> list[float]:
-        
-        if type(self.increment) == float:
-            
-            return list(np.arange(0.0, 1.0 + self.increment, self.increment))
-        
-        elif type(self.increment) == list:
-            
-            return self.increment
-        
-        else:
-            
-            raise TypeError("Increment type not recognized")
+        return self.config['proportions']
 
     @property
     def proportion_ids(self) -> list[int]:
