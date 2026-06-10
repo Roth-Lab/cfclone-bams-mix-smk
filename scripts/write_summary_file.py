@@ -23,7 +23,9 @@ def main(args):
     
     df.insert(3, 'coverage', args.coverage)
     
-    df.insert(4, 'proportion', args. proportion)
+    df.insert(4, 'proportion', args.proportion)
+    
+    df.insert(5, 'data_seed', args.data_seed)
 
     df.to_csv(args.out_file, index=False, sep="\t")
 
@@ -48,6 +50,8 @@ if __name__ == "__main__":
     parser.add_argument("--coverage", required=True, type=float)
     
     parser.add_argument("--proportion", required=True, type=float)
+    
+    parser.add_argument("--data-seed", required=True, type=int)
     
     cli_args = parser.parse_args()
     
