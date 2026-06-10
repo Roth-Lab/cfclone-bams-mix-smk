@@ -2,6 +2,8 @@ from snakemake.utils import min_version, validate
 
 min_version("9.12")
 
+validate(config, "schemas/config.schema.yaml")
+
 from utils import ConfigManager
 
 config = ConfigManager(config)
