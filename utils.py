@@ -67,13 +67,13 @@ class ConfigManager:
     def patient(self) -> list[str]:
         return self.config["patient"]
 
-    @property
-    def initial_sample(self) -> str:
-        return self.config["initial_sample"]
+    # @property
+    # def initial_sample(self) -> str:
+    #     return self.config["initial_sample"]
 
-    @property
-    def final_sample(self) -> str:
-        return self.config["final_sample"]
+    # @property
+    # def final_sample(self) -> str:
+    #     return self.config["final_sample"]
 
     # INPUT COHORT DATA
 
@@ -403,7 +403,10 @@ class ConfigManager:
     @property
     def merged_summary_file(self):
         return self.cfclone_out_dir.joinpath("summary.tsv")
-
+    
+    @property
+    def cfclone_summary_file(self):
+        return self.cfclone_pipeline_dir.joinpath("cfclone_summary_file.tsv")
 
     # SUMMARY OUTPUTS
 
@@ -431,6 +434,8 @@ class ConfigManager:
         files.append(self.copied_config)
 
         files.append(self.mixed_bams_summary_file)
+        
+        files.append(self.summary_file)
 
         for c in self.coverage_ids:
             
@@ -513,7 +518,22 @@ class ConfigManager:
             + "+"
             + self.mixtures[int(wildcards.mixture_id)]['final']
         )
-
+        
+    def get_initial_bam_id(self, wildcards: dict) -> str:
+        return self.get_bam_id('initial', wildcards)
+        
+    def get_final_bam_id(self, wildcards: dict) -> str:
+        return self.get_bam_id('final', wildcards)
+        
+    def get_bam_id(self, timepoint: str, wildcards: dict) -> str:
+        return self.mixtures[int(wildcards.mixture_id)][timepoint]
+    
+    def get_coverage(self, wildcards: dict) -> float:
+        return self.coverages[int(wildcards.coverage_id)]
+    
+    def get_proportion(self, wildcards: dict) -> float:
+        return self.proportion_ids[int(wildcards.proportion_id)]
+        
     def get_bams_to_mix(self, wildcards: dict) -> list[str]:
         
         coverage_id = int(wildcards.coverage_id)
@@ -579,7 +599,7 @@ class ConfigManager:
     # HELPERS TO GATHERS FILES
 
     @property
-    def gather_mixed_bams_summary_files(self) -> list[str]:
+    def gather_files(self, file_template: str) -> list[str]:
 
         files = []
 
@@ -591,7 +611,9 @@ class ConfigManager:
                     
                     for r in self.data_seed_ids:
 
-                        file = str(self.mixed_bam_total_reads_template).format(
+                        file = str(
+                            file_template
+                        ).format(
                             coverage_id=c,
                             mixture_id=s,
                             proportion_id=i,

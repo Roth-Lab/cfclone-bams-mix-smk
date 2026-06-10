@@ -33,11 +33,11 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("-o", "--out-file", required=True)
+    
     parser.add_argument("-e", "--evidence-file", required=True)
     
     parser.add_argument("-t", "--tumour-content-file", required=True)
-    
-    parser.add_argument("-o", "--out-file", required=True)
     
     parser.add_argument("--patient", required=True, type=str)
     

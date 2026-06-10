@@ -127,7 +127,7 @@ rule write_mixed_bam_summary_file:
 
 rule merge_mixed_bams_summary_files:
     input:
-        config.gather_mixed_bams_summary_files
+        config.gather_files(config.mixed_bam_total_reads_template)
     output:
         config.mixed_bams_summary_file
     conda:
@@ -464,14 +464,43 @@ use rule run_cfclone from cfclone as cfclone_run_cfclone with:
         i=config.cfclone_ctdna_template,
 
 
-# rule merge_tumour_content_files:
-#     input:
-#         lambda wildcards: config.gather_cfclone_files(config.merged_tumour_content_file)
-#     output:
-#         config.tumour_content_summary_file
-#     conda:
-#         "envs/python.yaml"
-#     log:
-#         config.get_log_file(config.tumour_content_summary_file),
-#     shell:
-#         "(python scripts/merge_tables.py -i {input} -o {output}) >{log} 2>&1"
+rule build_summary_file:
+    input:
+        e=config.merged_evidence_file,
+        t=config.merged_tumour_content_file,
+    output:
+        config.cfclone_summary_file
+    params:
+        p=config.patient,
+        i=config.get_initial_bam_id,
+        f=config.get_final_bam_id,
+        c=config.get_coverage,
+        t=config.get_proportion
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.cfclone_summary_file)
+    shell:
+        "(python scripts/write_summary_file.py "
+        "--out-file {output} "
+        "--evidence-file {input.e} "
+        "--tumour-content-file {input.t} "
+        "--patient {params.p} "
+        "--initial-sample {param.i} "
+        "--final-sample {param.f} "
+        "--coverage {params.c} "
+        "--proportion {params.t} "
+        "--data-seed {wildcards.data_seed_id} ) >{log} 2>&1"
+
+
+rule merge_summaries:
+    input:
+        config.gather_files(config.cfclone_summary_file)
+    output:
+        config.summary_file,
+    conda:
+        "envs/python.yaml"
+    log:
+        config.get_log_file(config.summary_file),
+    shell:
+        "(python scripts/merge_tables.py -i {input} -o {output}) >{log} 2>&1"
