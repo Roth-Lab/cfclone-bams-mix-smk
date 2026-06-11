@@ -237,6 +237,7 @@ class ConfigManager:
     @property
     def down_sampled_bam_file_template(self) -> Path:
         return self.pipeline_dir.joinpath(
+            "data",
             "coverage_{coverage_id}",
             "mixture_{mixture_id}",
             "proportion_{proportion_id}",
@@ -247,6 +248,7 @@ class ConfigManager:
     @property
     def mixed_bam_file_template(self) -> Path:
         return self.out_dir.joinpath(
+            "data",
             "coverage_{coverage_id}",
             "mixture_{mixture_id}",
             "proportion_{proportion_id}",
@@ -411,20 +413,12 @@ class ConfigManager:
     # SUMMARY OUTPUTS
 
     @property
-    def outputs(self) -> Path:
-        return self.out_dir.joinpath("outputs")
-
-    @property
     def summary_file(self):
-        return self.outputs.joinpath("summary.tsv")
-
-    @property
-    def down_sampled_summary_file(self) -> Path:
-        return self.outputs.joinpath("down_sampled_bams_summary.tsv")
+        return self.out_dir.joinpath("summary.tsv")
 
     @property
     def mixed_bams_summary_file(self) -> Path:
-        return self.outputs.joinpath("mixed_bams_summary.tsv")
+        return self.out_dir.joinpath("mixed_bams_summary.tsv")
 
     @property
     def pipeline_files(self) -> list[str]:
