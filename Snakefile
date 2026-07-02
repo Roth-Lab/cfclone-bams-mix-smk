@@ -13,8 +13,6 @@ pathvars:
     out_dir=str(config.cfclone_out_dir),
     pipeline_dir=str(config.cfclone_pipeline_dir),
 
-print("LOL")
-
 ruleorder: downsample_bam_file > merge_bam_files > write_mixed_bam_summary_file
 
 rule all:
