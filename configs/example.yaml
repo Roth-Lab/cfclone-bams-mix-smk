@@ -1,21 +1,89 @@
-out_dir: /home/matteo/projects/cfdna/wfs/results/dev/cfclone-down-bams-detect-smk/out_dir
+# WORKFLOW DIRS
 
-# INPUT DATA 
+out_dir: /path/to/out_dir
 
-samples_data_dir: test_data
+pipeline_dir: /path/to/pipeline_dir
 
-samples_total_read_counts_file: test_data/bam_read_counts.tsv
+# PATIENT INPUT DATA 
 
-# WILDCARDS
+bam_file_template: /path/to/bam/files/{patient}/{sample}.bam
 
-coverages:
-  - 0.0000001
+control_bam_file_template: /path/to/control/bam/file/{patient}/normal.bam
 
-samples:
-  - a 
+read_counts_file_template: /path/to/read/counts/{patient}/bam_read_counts.tsv
 
-# DATA SETTINGS 
+snp_file_template: /path/to/snps/file/{patient}/rephased_snps.bcf
+
+clone_filter_file_template: /path/to/clones/file/{patient}.tsv
+
+hapclone_results_file_template: /path/to/hapclone/{patient}/merged_results.tsv.gz
+
+# PREPROC INPUT DATA
+
+black_list_file: /path/to/blacklist/file/hg38-blacklist.v2.bed.gz
+
+centromere_file: /path/to/centromere/file/GRCh38.GCA_000001405.2_centromere_acen.txt
+
+map_file: /path/to/mappability/file/hg38.fa.mappability_150bp.bw
+
+ref_genome_file: /path/to/reference/genome/Homo_sapiens_assembly38.fasta
+
+# PREPROC SETTINGS
+
+add_chr_prefix: True
+
+bin_size: 500kb
+
+min_bqual: 30
+
+min_mqual: 30
 
 read_length: 150
 
 genome_length: 3000000000
+
+# WILDCARDS
+
+patient: CID0006607
+
+mixtures:
+  0: 
+    initial: VOA12433P
+    final: VOA8262P1 
+
+coverages:
+  - 30.0
+
+proportions:
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  - 0.45
+  - 0.5
+  - 0.55
+  - 0.6
+  - 0.7
+  - 0.8
+  - 0.9
+  - 0.925
+  - 0.95
+  - 0.975
+  - 0.99
+
+
+chromosomes:
+  - autosomes
+  - X
+
+num_data_replicates: 1
+
+num_model_replicates: 1
+
+# SAMPLER SETTINGS 
+
+num_chains: 5
+
+num_rounds: 10
+
+num_threads: 4
