@@ -8,25 +8,12 @@ from utils import ConfigManager
 
 config = ConfigManager(config)
 
-onsuccess:
-    config.email_notification(
-        on="success",
-        workflow="cfclone-bams-mix-tf-smk",
-        configfile=workflow.configfiles[0],
-        imgs=[config.copied_config],
-    )
-
-onerror:
-    config.email_notification(
-        on="error", 
-        workflow="cfclone-bams-mix-tf-smk",
-        configfile=workflow.configfiles[0],
-    )
 
 pathvars:
     out_dir=str(config.cfclone_out_dir),
     pipeline_dir=str(config.cfclone_pipeline_dir),
 
+print("LOL")
 
 ruleorder: downsample_bam_file > merge_bam_files > write_mixed_bam_summary_file
 
@@ -41,7 +28,6 @@ rule build_config_file:
         config.copied_config
     shell:
         "cp {input} {output}"
-
 
 # DOWN SAMPLE BAM FILES 
 
