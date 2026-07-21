@@ -1,22 +1,88 @@
+# Evaluate cfClone in-silico mixtures of cfDNA bams
+A [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow that generates in-silico mixtures from inputted bam files and runs [cfclone](https://github.com/Roth-Lab/cfclone) to perform tumour fraction estimation and tumour deconvolution.
 
+# Getting started
+This pipeline requires that [conda](https://github.com/conda-forge/miniforge) and [Snakemake](https://snakemake.readthedocs.io/en/stable/) be installed; the [Bioconda](https://bioconda.github.io/#usage) package channel must also be configured.
 
+**Dependencies**
+* [conda](https://github.com/conda-forge/miniforge), version >24.7.1
+* [Snakemake](https://snakemake.readthedocs.io/en/stable/), version >=9.14.8
 
-### Requirements before running workflow
-1. Needs directory that contains bams files.
-2. Need .tsv file that contains read counts for each bam file in same directory as bam files.
-3. See `resources/counts_bams.sh`
+**Environment**
+1. Ensure that you have a working `conda` installation, you can do this by installing [Miniforge](https://github.com/conda-forge/miniforge#install).
+2. Configure the [Bioconda channel](https://bioconda.github.io/#usage) and set strict channel priority:
+   ```
+   conda config --add channels bioconda
+   conda config --add channels conda-forge
+   conda config --set channel_priority strict
+   ```
+3. Install [Snakemake](https://snakemake.readthedocs.io/en/stable/):
+   ```
+   conda create -c conda-forge -c bioconda --name snakemake snakemake'>=9.12'
+   ```
 
-### Requirements to run workflow
+**Workflow**
 
+1. Create a working directory for the workflow:
+   ```
+   mkdir -p path/to/project-workdir
+   cd path/to/project-workdir
+   ```
+2. Clone the workflow repository through git:
+      ```
+      git clone --depth 1 https://github.com/Roth-Lab/cfclone-bams-mix-smk.git
+      ```
+# Usage
 
+**Configuration**
 
+For a full description of all available pipeline options, please refer to the pipeline [schema](schemas/config.schema.yaml). Modify the configuration file, [config.yaml](configs/example.yaml) to suit your dataset.
 
-### Notes
+**Run Workflow**
+1. Navigate to the project directory and activate the snakemake environment:
+   ```
+   cd path/to/project-workdir/cfclone-bams-mix-smk
+   conda activate snakemake
+   ```
+2. Run a dry-run of the pipeline to confirm the ruleset and outputs are as you expect:
+   ```
+   snakemake --cores <number-of-CPU-cores-to-use> --configfile <path/to/config-file> -n 
+   ```
+3. Run the pipeline:
+   ```
+   snakemake --cores <number-of-CPU-cores-to-use> --configfile <path/to/config-file>
+   ```
 
-- All files and directories below can be templated using {patient_id} to allow for config file reuse e.g. snp_file: /foo/bar/data/{patient_id}.bcf
+---------
+# Output
+The main outputs of the pipeline are posterior distributions on tumour fraction and clone prevalences.
+More on the contents of these output files can be found in the [cfClone repository](https://github.com/Roth-Lab/cfClone).
 
-- control bam file ideally should be ctDNA sequencing from a copy number flat genome. Not the matached normal for the patient.
-
-- Path to file with SNPs for the patient either BCF or VCF format
-- Note: SNPs should be called from the matched normal
-- Note: SNPs should be phased
+**Example workflow output folder structure:**
+```
+<out-dir>
+out-dir/
+├── cfclone/
+│   └── coverage_{coverage_id}/
+│       └── mixture_{mixture_id}/
+│           └── proportion_{proportion_id}/
+│               └── data_seed_{data_seed}/
+│                   └── out_dir/
+│                       ├── config.yaml
+│                       ├── evidence.tsv
+│                       ├── restart_{model_seed}/
+│                       │   ├── fit/
+│                       │   │   ├── full
+│                       │   │   ├── full.h5
+│                       │   │   ├── normal
+│                       │   │   └── normal.h5
+│                       │   └── tables/
+│                       │       ├── evidence.tsv
+│                       │       ├── summary.tsv
+│                       │       └── tumour_content.tsv
+│                       ├── summary.tsv
+│                       └── tumour_content.tsv
+├── config.yaml
+├── mixed_bams_summary.tsv
+└── summary.tsv
+```

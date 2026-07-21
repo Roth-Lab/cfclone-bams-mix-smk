@@ -52,8 +52,6 @@ rule downsample_bam_file:
         samtools view -b -f 0x2 --subsample-seed {params.seed} --subsample {params.prop} {input.bam} -o {output.bam} 1> {log} 2>&1
         samtools index {output.bam} 1>> {log} 2>&1
         """
-        # samtools view -b -s {params} {input.bam} -o {output.bam} 1> {log} 2>&1
-        # samtools view --write-index -b -s {params.fraction} {input.bam} -o {output.bam}##idx##{output.bai} 1> {log} 2>&1 # returns error "Random alignment retrieval only works for index ...""
 
 
 rule merge_bam_files:
@@ -109,6 +107,7 @@ rule write_mixed_bam_summary_file:
         "--read-length {params.r} "
         "--genome-length {params.g} ) >{log} 2>&1"
 
+
 rule merge_mixed_bams_summary_files:
     input:
         config.gather_files(config.mixed_bam_total_reads_template)
@@ -143,6 +142,7 @@ rule build_map_wig:
         "> {output} "
         "2> {log}"
 
+
 rule build_gc_wig:
     input:
         config.ref_genome_file
@@ -161,6 +161,7 @@ rule build_gc_wig:
         "gcCounter -c {params.c} -w {params.w} -s {input} "
         "> {output} "
         "2>{log}"
+
 
 rule build_reads_chrom:
     input:
@@ -261,6 +262,7 @@ rule build_reads_wig:
         "(python scripts/build_reads_wig.py "
         "-i {input} "
         "-o {output}) >{log} 2>&1"
+
 
 rule build_rdr:
     input:
